@@ -1,0 +1,12 @@
+**/*.exe
+**/music-api
+
+bin/
+target/
+.idea/
+
+job.nomad
+
+*.log
+*.tar
+*.tar.gz

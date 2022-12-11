@@ -1,0 +1,26 @@
+image: golang:1.18.3-alpine
+
+stages:
+    - test
+
+#
+# Test
+#
+build:
+    stage: test
+    before_script:
+        - apk add --update make gcc libc-dev
+        - make bootstrap
+        - go mod download
+    script:
+        - make build
+        - ls -R bin
+
+test:
+    stage: test
+    before_script:
+        - apk add --update make gcc libc-dev
+        - make bootstrap
+        - go mod download
+    script:
+        - make test
