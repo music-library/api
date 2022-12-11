@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.com/merrittcorp/spacegun/mock-api/api"
-	"gitlab.com/merrittcorp/spacegun/mock-api/version"
+	"gitlab.com/music-library/music-api/api"
+	"gitlab.com/music-library/music-api/version"
 )
 
 // Measure time
