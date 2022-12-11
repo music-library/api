@@ -21,7 +21,7 @@ func main() {
 	app := fiber.New()
 
 	// Setup the router
-	api.MockRoutes(app)
+	api.ApiRoutes(app)
 
 	// Listen
 	log.Fatal(app.Listen(listenAddr()))

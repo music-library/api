@@ -8,8 +8,9 @@ API for the Music-Library project, written in Go.
 
 -   [ ] `/tracks`
 -   [ ] `/albums` - array of trackIds (maybe an object with hash of album + album artist?)
--   [ ] `/track/audio`
--   [ ] `/track/cover/:size?`
+-   [ ] `/track/:id`
+-   [ ] `/track/:id/audio`
+-   [ ] `/track/:id/cover/:size?`
 -   [ ] Extract metadata
 -   [ ] Cache metadata
 
@@ -27,6 +28,7 @@ API for the Music-Library project, written in Go.
 -   [ ] tests
 -   [ ] benchmarks
 -   [ ] n-gram search
+-   [ ] playlists?
 -   [ ] file watcher, re-index after file change (wait a bit before re-indexing to avoid spamming)
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
     -   [ ] Chat? - encrypted maybe?
