@@ -17,10 +17,10 @@ API for the Music-Library project, written in Go.
 
 -   [ ] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
+-   [ ] Get average + primary color of album cover
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
     -   [ ] Active user count (existing functionality)
     -   [ ] Session following
-    -   [ ] Chat? - encrypted maybe?
 
 ### _Just for fun_
 
