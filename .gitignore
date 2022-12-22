@@ -1,7 +1,9 @@
 **/*.exe
 **/music-api
+**/music-api-dev
 
 bin/
+tmp/
 target/
 .idea/
 

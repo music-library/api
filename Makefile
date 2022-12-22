@@ -15,6 +15,9 @@ vet: fmt
 
 bootstrap:
 	go mod download
+	go get github.com/cosmtrek/air
+	go get github.com/mitchellh/gox
+	go install github.com/cosmtrek/air
 	go install github.com/mitchellh/gox
 	go generate -tags tools tools/tools.go
 
@@ -25,23 +28,20 @@ bootstrap:
 run: buildq
 	./music-api
 
+rundev:
+	air
+
 test:
 	go test --cover ./...
 
 bench:
 	go test --cover -bench . -benchmem ./...
 
-# Reflex doesn't work on windows :(
-# @TODO: implement an equivalent file watcher
-#watch:
-#	reflex -s -r '*.go' make run
-
-#
-# Build
-#
-
 buildq:
 	go build -ldflags "-s -w" .
+
+builddev:
+	go build -ldflags "-s -w" -tags "music-api-dev" -o "bin/music-api-dev.exe" .
 
 build: vet
 	gox -osarch "linux/amd64 windows/amd64" \

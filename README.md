@@ -56,5 +56,5 @@ $ make bootstrap
 ```
 
 ```bash
-$ make run
+$ make rundev
 ```

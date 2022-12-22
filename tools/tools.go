@@ -7,7 +7,9 @@
 
 package tools
 
+//go:generate go install github.com/cosmtrek/air
 //go:generate go install github.com/mitchellh/gox
 import (
+	_ "github.com/cosmtrek/air"
 	_ "github.com/mitchellh/gox"
 )
