@@ -41,3 +41,20 @@ API for the Music-Library project, written in Go.
 -   [ ] `/track/search/:query` - return audio (same as `/track/:id/audio`) - Useful for searching for a song and playing it directly
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
     -   [ ] Chat? - encrypted maybe?
+
+## Development
+
+### ENV
+
+-   `HOST` - Host to run the server on (default: `localhost`)
+-   `PORT` - Port to run the server on (default: `3001`)
+
+### Setup
+
+```bash
+$ make bootstrap
+```
+
+```bash
+$ make run
+```
