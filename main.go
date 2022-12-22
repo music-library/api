@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/music-library/music-api/api"
@@ -24,20 +22,5 @@ func main() {
 	api.ApiRoutes(app)
 
 	// Listen
-	log.Fatal(app.Listen(listenAddr()))
-}
-
-func listenAddr() string {
-	port := getPort()
-	return fmt.Sprintf("localhost:%s", port)
-}
-
-func getPort() string {
-	port := os.Getenv("PORT")
-
-	if len(port) == 0 {
-		port = "3001"
-	}
-
-	return port
+	log.Fatal(app.Listen(ListenAddr()))
 }
