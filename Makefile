@@ -22,8 +22,8 @@ bootstrap:
 # Run, test, & bench
 #
 
-run:
-	go run .
+run: buildq
+	./music-api
 
 test:
 	go test --cover ./...
