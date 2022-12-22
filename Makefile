@@ -14,6 +14,7 @@ vet: fmt
 	go vet ./...
 
 bootstrap:
+	go mod download
 	go install github.com/mitchellh/gox
 	go generate -tags tools tools/tools.go
 
