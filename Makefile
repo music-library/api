@@ -25,17 +25,21 @@ bootstrap:
 # Run, test, & bench
 #
 
-run: buildq
-	./music-api
+run:
+	air
 
 rundev:
-	air
+	.\air.exe
 
 test:
 	go test --cover ./...
 
 bench:
 	go test --cover -bench . -benchmem ./...
+
+#
+# Build
+#
 
 buildq:
 	go build -ldflags "-s -w" .
