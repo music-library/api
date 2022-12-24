@@ -1,6 +1,8 @@
 package indexer
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +14,7 @@ import (
 type IndexFile struct {
 	Id       string
 	Path     string
-	FilePath string
+	FileName string
 }
 
 type Index struct {
@@ -31,14 +33,14 @@ func (index *Index) Populate(path string) {
 			return nil
 		}
 
-		// @TODO: Check extension
-		// filepath.Ext(path) == ".txt"
+		if !info.IsDir() && isFileAudio(itemPath) {
+			itemId := hashString(itemPath)
 
-		if !info.IsDir() {
-			fmt.Println(itemPath)
-
-			// @TODO: Add to index
-			// files = append(files, itemPath)
+			index.Files[itemId] = &IndexFile{
+				Id:       itemId,
+				Path:     itemPath,
+				FileName: filepath.Base(itemPath), // @Investigate: Is this needed?
+			}
 		}
 
 		return nil
@@ -48,7 +50,7 @@ func (index *Index) Populate(path string) {
 		log.Fatal("cache/populate failed ", err)
 	}
 
-	log.Debug(fmt.Sprintf("cache/populate end in %s %s", time.Since(start), path))
+	log.Debug(fmt.Sprintf("cache/populate end. indexed %d items in %s %s", len(index.Files), time.Since(start), path))
 }
 
 // Crawl each file in the index
@@ -56,4 +58,24 @@ func (index *Index) Crawl(callback func(IndexFile)) {
 	for _, v := range index.Files {
 		callback(*v)
 	}
+}
+
+// Check if file is audio file
+func isFileAudio(path string) bool {
+	return filepath.Ext(path) == ".flac" || filepath.Ext(path) == ".mp3" || filepath.Ext(path) == ".ogg"
+}
+
+// Hash string using SHA1, returns a string.
+func hashString(str string) string {
+	// Store string in buffer array
+	buf := []byte(str)
+
+	// Hash string, returns buffer array
+	hash_byte := sha1.Sum(buf)
+
+	// Convert buffer into hex string
+	hash := hex.EncodeToString(hash_byte[:])
+
+	// Return hash as string
+	return hash
 }

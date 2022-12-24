@@ -13,6 +13,7 @@ import (
 
 // Measure time
 // start := time.Now()
+// time.Since(start)
 // diff = time.Now().Sub(start)
 
 func init() {
