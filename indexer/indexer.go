@@ -15,13 +15,16 @@ type IndexFile struct {
 	Id       string
 	Path     string
 	FileName string
+	// Metadata *Metadata
 }
 
 type Index struct {
-	Files map[string]*IndexFile
+	Files  map[string]*IndexFile
+	Albums [][]string // Slice of IndexFile.Id
 }
 
-func (index *Index) Populate(path string) {
+// Populate File index with audio `IndexFile` objects
+func (index *Index) Populate(path string, populateMetadata bool) {
 	start := time.Now()
 	log.Debug("cache/populate start " + path)
 

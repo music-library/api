@@ -4,7 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/gofiber/fiber/v2"
+	"gitlab.com/music-library/music-api/constants"
+	"gitlab.com/music-library/music-api/indexer"
 	version "gitlab.com/music-library/music-api/version"
 )
 
@@ -27,8 +31,18 @@ func MockHandler(c *fiber.Ctx) error {
 	errEncodingBody := c.BodyParser(parsedBody)
 
 	if errEncodingBody != nil {
-		fmt.Println("ERROR", errEncodingBody)
+		log.Error("ERROR", errEncodingBody)
 	}
+
+	index := indexer.Index{
+		Files: make(map[string]*indexer.IndexFile, 1000),
+	}
+
+	index.Populate(constants.MUSIC_DIR, true)
+
+	log.Debug("index", index.Files)
+
+	log.Info("MockHandler", constants.DATA_DIR, c.Method(), c.Path(), c.Params("*"), c.Body(), parsedBody)
 
 	res := MockResponse{
 		Body:        parsedBody,
