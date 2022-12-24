@@ -65,7 +65,27 @@ func GetTrackMetadata(filePath string) *Metadata {
 		Year:         meta.Year(),
 		Genre:        meta.Genre(),
 		Composer:     meta.Composer(),
-		Raw:          meta.Raw(),
+		Duration:     0,
 		// Duration:     meta.Duration(),
 	}
+}
+
+// Returns cover image as byte array, and mime type
+func GetTrackCover(filePath string) ([]byte, string) {
+	meta := getRawMetadata(filePath)
+
+	picture := meta.Picture()
+
+	if picture == nil {
+		log.Debug("index/metadata track has no cover image " + filePath)
+		return nil, "image/jpeg"
+	}
+
+	mimeType := picture.MIMEType
+
+	if len(mimeType) == 0 {
+		mimeType = "image/jpeg"
+	}
+
+	return picture.Data, mimeType
 }
