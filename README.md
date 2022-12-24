@@ -48,6 +48,10 @@ API for the Music-Library project, written in Go.
 
 -   `HOST` - Host to run the server on (default: `localhost`)
 -   `PORT` - Port to run the server on (default: `3001`)
+-   `LOG_LEVEL` - Log severity level (default: `error`)
+-   `LOG_FILE` - Log file (default: `DATA_DIR/music-api.log`)
+-   `DATA_DIR` - Data directory to cache and store info (default: `./data`)
+-   `MUSIC_DIR` - Music directory - where all your lovely music is :) (default: `./music`)
 
 ### Setup
 
