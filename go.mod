@@ -6,6 +6,7 @@ require (
 	github.com/cosmtrek/air v1.40.4
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/mitchellh/gox v1.0.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 )
 

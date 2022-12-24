@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/music-library/music-api/api"
@@ -12,6 +12,10 @@ import (
 // start := time.Now()
 // diff = time.Now().Sub(start)
 
+func init() {
+	MakeLogger("./music-api.log")
+}
+
 func main() {
 	version.PrintTitle()
 
@@ -20,6 +24,8 @@ func main() {
 
 	// Setup the router
 	api.ApiRoutes(app)
+
+	log.Debug("Listening on: " + ListenAddr())
 
 	// Listen
 	log.Fatal(app.Listen(ListenAddr()))
