@@ -9,7 +9,9 @@ package tools
 
 //go:generate go install github.com/cosmtrek/air
 //go:generate go install github.com/mitchellh/gox
+//go:generate go install gotest.tools/gotestsum
 import (
 	_ "github.com/cosmtrek/air"
 	_ "github.com/mitchellh/gox"
+	_ "gotest.tools/gotestsum"
 )

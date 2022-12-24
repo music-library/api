@@ -17,8 +17,10 @@ bootstrap:
 	go mod download
 	go get github.com/cosmtrek/air
 	go get github.com/mitchellh/gox
+	go get gotest.tools/gotestsum
 	go install github.com/cosmtrek/air
 	go install github.com/mitchellh/gox
+	go install gotest.tools/gotestsum
 	go generate -tags tools tools/tools.go
 
 #
@@ -32,7 +34,8 @@ rundev:
 	.\air.exe
 
 test:
-	go test --cover ./...
+# go test --cover ./...
+	gotestsum --format pkgname -- --cover ./...
 
 bench:
 	go test --cover -bench . -benchmem ./...
