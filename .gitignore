@@ -14,3 +14,4 @@ job.nomad
 *.log
 *.tar
 *.tar.gz
+metadata.json
