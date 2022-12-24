@@ -13,10 +13,10 @@ import (
 )
 
 type IndexFile struct {
-	Id       string
-	Path     string
-	FileName string
-	Metadata *Metadata
+	Id       string    `json:"id"`
+	Path     string    `json:"path"`
+	Metadata *Metadata `json:"metadata"`
+	// Stats    *Stat     `json:"stats"`
 }
 
 type Index struct {
@@ -42,7 +42,6 @@ func (index *Index) Populate(path string) {
 			index.Files[itemId] = &IndexFile{
 				Id:       itemId,
 				Path:     itemPath,
-				FileName: filepath.Base(itemPath), // @Investigate: Is this needed?
 				Metadata: GetEmptyMetadata(),
 				// Metadata: GetTrackMetadata(itemPath),
 			}
@@ -56,6 +55,13 @@ func (index *Index) Populate(path string) {
 	}
 
 	log.Debug(fmt.Sprintf("index/populate end. indexed %d items in %s %s", len(index.Files), time.Since(start), path))
+}
+
+// Populate IndexFile with actual metadata
+func (index *Index) PopulateFileMetadata(indexFile *IndexFile) *IndexFile {
+	metadata := GetTrackMetadata(indexFile.Path)
+	indexFile.Metadata = metadata
+	return indexFile
 }
 
 // Crawl each file in the index
