@@ -9,7 +9,7 @@ func ApiRoutes(router fiber.Router) {
 	router.Get("/tracks", MockHandler)
 	router.Get("/track/:id", MockHandler)
 	router.Get("/track/:id/audio", MockHandler)
-	router.Get("/track/:id/cover/:size?", MockHandler)
+	router.Get("/track/:id/cover/:size?", TrackCoverHandler)
 
 	// Album
 	router.Get("/albums", MockHandler)
