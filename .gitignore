@@ -4,6 +4,8 @@
 
 bin/
 tmp/
+data/
+music/
 target/
 .idea/
 
