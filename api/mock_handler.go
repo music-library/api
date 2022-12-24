@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/music-library/music-api/constants"
-	"gitlab.com/music-library/music-api/indexer"
 	version "gitlab.com/music-library/music-api/version"
 )
 
@@ -33,14 +32,6 @@ func MockHandler(c *fiber.Ctx) error {
 	if errEncodingBody != nil {
 		log.Error("ERROR", errEncodingBody)
 	}
-
-	index := indexer.Index{
-		Files: make(map[string]*indexer.IndexFile, 1000),
-	}
-
-	index.Populate(constants.MUSIC_DIR, true)
-
-	log.Debug("index", index.Files)
 
 	log.Info("MockHandler", constants.DATA_DIR, c.Method(), c.Path(), c.Params("*"), c.Body(), parsedBody)
 
