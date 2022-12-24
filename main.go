@@ -30,11 +30,11 @@ func main() {
 
 	// Create data directory
 	if _, err := os.Stat(constants.DATA_DIR); os.IsNotExist(err) {
-		log.Debug("Creating data directory: " + constants.DATA_DIR)
+		log.Debug("creating data directory " + constants.DATA_DIR)
 		os.Mkdir(constants.DATA_DIR, 0755)
 	}
 
 	// Listen
-	log.Debug("Listening on: " + ListenAddr())
+	log.Debug("music-api server listening on " + ListenAddr())
 	log.Fatal(app.Listen(ListenAddr()))
 }
