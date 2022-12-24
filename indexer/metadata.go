@@ -17,12 +17,25 @@ type Metadata struct {
 	Year         int
 	Genre        string
 	Composer     string
-	Duration     string
-	Raw          map[string]interface{}
+	Duration     int // in seconds
 	// Cover     not here -> stored in cache
 }
 
-func (index *Index) GetMetadata(filePath string) *Metadata {
+func GetEmptyMetadata() *Metadata {
+	return &Metadata{
+		Track:        1,
+		Title:        "(unknown)",
+		Artist:       "~",
+		Album_artist: "~",
+		Album:        "~",
+		Year:         0,
+		Genre:        "~",
+		Composer:     "~",
+		Duration:     0,
+	}
+}
+
+func getRawMetadata(filePath string) tag.Metadata {
 	file, fileErr := os.Open(filePath)
 
 	if fileErr != nil {
@@ -34,6 +47,12 @@ func (index *Index) GetMetadata(filePath string) *Metadata {
 	if err != nil {
 		log.Error("index/metadata failed to extract metadata from " + filePath)
 	}
+
+	return meta
+}
+
+func GetTrackMetadata(filePath string) *Metadata {
+	meta := getRawMetadata(filePath)
 
 	track, _ := meta.Track()
 

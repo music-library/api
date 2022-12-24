@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -19,20 +20,19 @@ type IndexFile struct {
 }
 
 type Index struct {
-	Files  map[string]*IndexFile
-	Albums [][]string // Slice of IndexFile.Id
+	Files map[string]*IndexFile
+	// Albums [][]string // Slice of IndexFile.Id
 }
 
 // Populate File index with audio `IndexFile` objects
-func (index *Index) Populate(path string, populateMetadata bool) {
+func (index *Index) Populate(path string) {
 	start := time.Now()
 	log.Debug("index/populate start " + path)
 
 	err := filepath.Walk(path, func(itemPath string, info os.FileInfo, err error) error {
 
 		if err != nil {
-
-			fmt.Println(err)
+			log.Error("index/populate file failed to be indexed ", err)
 			return nil
 		}
 
@@ -43,7 +43,8 @@ func (index *Index) Populate(path string, populateMetadata bool) {
 				Id:       itemId,
 				Path:     itemPath,
 				FileName: filepath.Base(itemPath), // @Investigate: Is this needed?
-				Metadata: index.GetMetadata(itemPath),
+				Metadata: GetEmptyMetadata(),
+				// Metadata: GetTrackMetadata(itemPath),
 			}
 		}
 
@@ -66,7 +67,8 @@ func (index *Index) Crawl(callback func(IndexFile)) {
 
 // Check if file is audio file
 func isFileAudio(path string) bool {
-	return filepath.Ext(path) == ".flac" || filepath.Ext(path) == ".mp3" || filepath.Ext(path) == ".ogg"
+	ext := strings.ToLower(filepath.Ext(path))
+	return ext == ".flac" || ext == ".mp3" || ext == ".ogg" || ext == ".wav"
 }
 
 // Hash string using SHA1, returns a string.
