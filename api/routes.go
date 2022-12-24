@@ -7,7 +7,7 @@ import (
 func ApiRoutes(router fiber.Router) {
 	// Track
 	router.Get("/tracks", MockHandler)
-	router.Get("/track/:id", MockHandler)
+	router.Get("/track/:id", TrackHandler)
 	router.Get("/track/:id/audio", MockHandler)
 	router.Get("/track/:id/cover/:size?", TrackCoverHandler)
 
