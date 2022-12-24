@@ -15,7 +15,7 @@ type IndexFile struct {
 	Id       string
 	Path     string
 	FileName string
-	// Metadata *Metadata
+	Metadata *Metadata
 }
 
 type Index struct {
@@ -26,7 +26,7 @@ type Index struct {
 // Populate File index with audio `IndexFile` objects
 func (index *Index) Populate(path string, populateMetadata bool) {
 	start := time.Now()
-	log.Debug("cache/populate start " + path)
+	log.Debug("index/populate start " + path)
 
 	err := filepath.Walk(path, func(itemPath string, info os.FileInfo, err error) error {
 
@@ -43,6 +43,7 @@ func (index *Index) Populate(path string, populateMetadata bool) {
 				Id:       itemId,
 				Path:     itemPath,
 				FileName: filepath.Base(itemPath), // @Investigate: Is this needed?
+				Metadata: index.GetMetadata(itemPath),
 			}
 		}
 
@@ -50,10 +51,10 @@ func (index *Index) Populate(path string, populateMetadata bool) {
 	})
 
 	if err != nil {
-		log.Fatal("cache/populate failed ", err)
+		log.Fatal("index/populate failed ", err)
 	}
 
-	log.Debug(fmt.Sprintf("cache/populate end. indexed %d items in %s %s", len(index.Files), time.Since(start), path))
+	log.Debug(fmt.Sprintf("index/populate end. indexed %d items in %s %s", len(index.Files), time.Since(start), path))
 }
 
 // Crawl each file in the index
