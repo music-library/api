@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/constants"
 	"gitlab.com/music-library/music-api/indexer"
 )
@@ -20,7 +21,14 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	index.Populate(constants.MUSIC_DIR)
 
 	trackId := strings.ToLower(c.Params("id"))
-	track := index.Files[trackId]
+	track, ok := index.Files[trackId]
+
+	if !ok {
+		log.Error("http/track/" + trackId + " track does not exist")
+		return c.Status(500).Send([]byte("{}"))
+		// @TODO: Send default cover
+	}
+
 	trackCover, trackCoverMimetype := indexer.GetTrackCover(track.Path)
 
 	fmt.Println(time.Since(start))
