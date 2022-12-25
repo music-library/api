@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/music-library/music-api/api"
-	"gitlab.com/music-library/music-api/constants"
+	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/version"
 )
 
@@ -17,7 +17,7 @@ import (
 // diff = time.Now().Sub(start)
 
 func init() {
-	MakeLogger(constants.LOG_FILE)
+	MakeLogger(global.LOG_FILE)
 }
 
 func main() {
@@ -30,10 +30,13 @@ func main() {
 	api.ApiRoutes(app)
 
 	// Create data directory
-	if _, err := os.Stat(constants.DATA_DIR); os.IsNotExist(err) {
-		log.Debug("creating data directory " + constants.DATA_DIR)
-		os.Mkdir(constants.DATA_DIR, 0755)
+	if _, err := os.Stat(global.DATA_DIR); os.IsNotExist(err) {
+		log.Debug("creating data directory " + global.DATA_DIR)
+		os.Mkdir(global.DATA_DIR, 0755)
 	}
+
+	// Populate the index
+	global.Index.Populate(global.MUSIC_DIR)
 
 	// Listen
 	log.Debug("music-api server listening on " + ListenAddr())

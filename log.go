@@ -5,7 +5,7 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/music-library/music-api/constants"
+	"gitlab.com/music-library/music-api/global"
 )
 
 // Create a logrus logger.
@@ -31,7 +31,7 @@ func MakeLogger(logFilePath string) {
 
 // Get & set logrus log level from environment variable
 func SetLogLevelFromEnv() {
-	switch constants.LOG_LEVEL {
+	switch global.LOG_LEVEL {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	case "info":

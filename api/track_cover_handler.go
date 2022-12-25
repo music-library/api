@@ -7,7 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/music-library/music-api/constants"
+	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
@@ -18,7 +18,7 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 		Files: make(map[string]*indexer.IndexFile, 1000),
 	}
 
-	index.Populate(constants.MUSIC_DIR)
+	index.Populate(global.MUSIC_DIR)
 
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := index.Files[trackId]

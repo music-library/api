@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.com/music-library/music-api/constants"
+	"gitlab.com/music-library/music-api/global"
 	version "gitlab.com/music-library/music-api/version"
 )
 
@@ -33,7 +33,7 @@ func MockHandler(c *fiber.Ctx) error {
 		log.Error("ERROR", errEncodingBody)
 	}
 
-	log.Info("MockHandler", constants.DATA_DIR, c.Method(), c.Path(), c.Params("*"), c.Body(), parsedBody)
+	log.Info("MockHandler", global.DATA_DIR, c.Method(), c.Path(), c.Params("*"), c.Body(), parsedBody)
 
 	res := MockResponse{
 		Body:        parsedBody,

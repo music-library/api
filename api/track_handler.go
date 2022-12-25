@@ -8,8 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/music-library/music-api/constants"
-	"gitlab.com/music-library/music-api/indexer"
+	"gitlab.com/music-library/music-api/global"
 )
 
 func TrackHandler(c *fiber.Ctx) error {
@@ -17,21 +16,15 @@ func TrackHandler(c *fiber.Ctx) error {
 
 	start := time.Now()
 
-	index := indexer.Index{
-		Files: make(map[string]*indexer.IndexFile, 1000),
-	}
-
-	index.Populate(constants.MUSIC_DIR)
-
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := index.Files[trackId]
+	track, ok := global.Index.Files[trackId]
 
 	if !ok {
 		log.Error("http/track/" + trackId + " track does not exist")
 		return c.Status(500).Send([]byte("{}"))
 	}
 
-	index.PopulateFileMetadata(track)
+	global.Index.PopulateFileMetadata(track)
 
 	trackJSON, err := json.Marshal(track)
 
