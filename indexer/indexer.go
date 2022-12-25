@@ -59,8 +59,11 @@ func (index *Index) Populate(path string) {
 
 // Populate IndexFile with actual metadata
 func (index *Index) PopulateFileMetadata(indexFile *IndexFile) *IndexFile {
-	metadata := GetTrackMetadata(indexFile.Path)
-	indexFile.Metadata = metadata
+	if indexFile.Metadata.Title == "(unknown)" {
+		metadata := GetTrackMetadata(indexFile.Path)
+		indexFile.Metadata = metadata
+	}
+
 	return indexFile
 }
 
