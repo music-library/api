@@ -36,7 +36,9 @@ func main() {
 	}
 
 	// Populate the index
-	global.Index.Populate(global.MUSIC_DIR)
+	go (func() {
+		global.Index.Populate(global.MUSIC_DIR)
+	})()
 
 	// Listen
 	log.Debug("music-api server listening on " + ListenAddr())
