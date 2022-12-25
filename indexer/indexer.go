@@ -29,14 +29,13 @@ func (index *Index) Populate(path string) {
 	start := time.Now()
 	log.Debug("index/populate start " + path)
 
-	err := filepath.Walk(path, func(itemPath string, info os.FileInfo, err error) error {
-
+	err := filepath.WalkDir(path, func(itemPath string, entry os.DirEntry, err error) error {
 		if err != nil {
 			log.Error("index/populate file failed to be indexed ", err)
 			return nil
 		}
 
-		if !info.IsDir() && isFileAudio(itemPath) {
+		if !entry.IsDir() && isFileAudio(itemPath) {
 			itemId := hashString(itemPath)
 
 			index.Files[itemId] = &IndexFile{
