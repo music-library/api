@@ -2,12 +2,7 @@
 FROM golang:1.18.3-alpine as build
 WORKDIR /app
 COPY / /app
-RUN apk add --update make gcc g++ libc-dev vips-dev pkgconfig
-ENV GOPATH /go
-ENV CGO_ENABLED 1
-ENV GOROOT /usr/local/go
-ENV CPATH /usr/local/include
-ENV LIBRARY_PATH /usr/local/lib
+RUN apk add --update make gcc g++ libc-dev
 ENV PKG_CONFIG_PATH /usr/lib:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
 RUN make bootstrap && make build
 

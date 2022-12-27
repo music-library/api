@@ -54,10 +54,10 @@ builddocker:
 	docker stop music-api
 	docker rm music-api
 	docker build --no-cache -t music-api .
-	docker run -d --name music-api -p 80:80 music-api
+#docker run -d --name music-api -p 80:80 music-api
 
 build: vet
-	gox -osarch "linux/amd64" \
+	gox -osarch "linux/amd64 windows/amd64" \
 	-gocmd go           \
 	-ldflags "-s -w"    \
 	-tags "music-api"    \
