@@ -1,9 +1,7 @@
 package api
 
 import (
-	"fmt"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
@@ -12,16 +10,8 @@ import (
 )
 
 func TrackCoverHandler(c *fiber.Ctx) error {
-	start := time.Now()
-
-	index := indexer.Index{
-		Files: make(map[string]*indexer.IndexFile, 1000),
-	}
-
-	index.Populate(global.MUSIC_DIR)
-
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := index.Files[trackId]
+	track, ok := global.Index.Files[trackId]
 
 	if !ok {
 		log.Error("http/track/" + trackId + " track does not exist")
@@ -30,8 +20,6 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	}
 
 	trackCover, trackCoverMimetype := indexer.GetTrackCover(track.Path)
-
-	fmt.Println(time.Since(start))
 
 	// Send response as JPEG
 	c.Response().Header.Add("Content-Type", trackCoverMimetype)

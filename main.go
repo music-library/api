@@ -3,9 +3,11 @@ package main
 import (
 	"os"
 
+	"github.com/bytedance/sonic"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"gitlab.com/music-library/music-api/api"
 	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/version"
@@ -24,7 +26,17 @@ func main() {
 	version.PrintTitle()
 
 	// Initiate Fiber web-server
-	app := fiber.New()
+	//
+	// Uses custom JSON encoding as recommended: https://docs.gofiber.io/guide/faster-fiber
+	app := fiber.New(fiber.Config{
+		JSONEncoder: sonic.Marshal,
+		JSONDecoder: sonic.Unmarshal,
+	})
+
+	// Middleware
+	if global.LOG_LEVEL == "debug" {
+		app.Use(logger.New())
+	}
 
 	// Setup the router
 	api.ApiRoutes(app)
