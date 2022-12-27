@@ -7,6 +7,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
 	"gitlab.com/music-library/music-api/global"
@@ -30,11 +31,14 @@ func main() {
 	//
 	// Uses custom JSON encoding as recommended: https://docs.gofiber.io/guide/faster-fiber
 	app := fiber.New(fiber.Config{
+		AppName:     "music-api",
 		JSONEncoder: sonic.Marshal,
 		JSONDecoder: sonic.Unmarshal,
 	})
 
 	// Middleware
+	app.Use(recover.New()) // Prevent crashes due to panics
+
 	if global.LOG_LEVEL == "debug" {
 		app.Use(logger.New())
 	}
