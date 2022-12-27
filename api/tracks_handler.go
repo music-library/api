@@ -15,7 +15,7 @@ func TracksHandler(c *fiber.Ctx) error {
 
 	if err != nil {
 		log.Error("http/tracks failed to marshal tracks")
-		return Error(c, 500, "failed to marshal track")
+		return Error(c, 500, "failed to marshal tracks")
 	}
 
 	return c.Send(trackJSON)
