@@ -99,7 +99,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 	baseMeta.Album = album
 
 	year := fmt.Sprint(meta.Year())
-	if len(year) == 0 {
+	if len(year) < 4 {
 		year = "~"
 	}
 	baseMeta.Year = year
