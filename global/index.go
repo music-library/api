@@ -5,5 +5,5 @@ import (
 )
 
 var Index = indexer.Index{
-	Files: make(map[string]*indexer.IndexFile, 1000),
+	Files: make(map[string]*indexer.IndexFile, 5000),
 }

@@ -38,6 +38,13 @@ func main() {
 	// Populate the index
 	go (func() {
 		global.Index.Populate(global.MUSIC_DIR)
+
+		// Populate metadata
+		for _, indexFile := range global.Index.Files {
+			go (func() {
+				global.Index.PopulateFileMetadata(indexFile)
+			})()
+		}
 	})()
 
 	// Listen
