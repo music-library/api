@@ -76,7 +76,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 		title = strings.ReplaceAll(title, ".", " ")
 		title = strings.ReplaceAll(title, "   ", " ")
 		title = strings.ReplaceAll(title, "  ", " ")
-		title = cases.Title(language.AmericanEnglish).String(title)
+		title = cases.Title(language.AmericanEnglish).String(strings.ToLower(title))
 	}
 	baseMeta.Title = title
 
@@ -104,7 +104,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 	}
 	baseMeta.Year = year
 
-	genre := cases.Title(language.AmericanEnglish).String(meta.Genre())
+	genre := cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Genre()))
 	if len(genre) == 0 {
 		genre = "~"
 	}
