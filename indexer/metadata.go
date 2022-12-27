@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -140,4 +141,18 @@ func GetTrackCover(filePath string) ([]byte, string) {
 	}
 
 	return picture.Data, mimeType
+}
+
+func ResizeTrackCover(idAlbum string, size string) (string, error) {
+	cache := Cache{
+		Path: "./data",
+	}
+	imgPath := fmt.Sprintf("%s/cover.jpg", idAlbum)
+	imgResizePath := fmt.Sprintf("%s/%s.jpg", idAlbum, size)
+
+	if !cache.Exists(imgResizePath) {
+		exec.Command("vipsthumbnail", cache.FilePath(imgPath), "--size", size, "-o", fmt.Sprintf("%s[Q=90]", cache.FilePath(imgResizePath))).Run()
+	}
+
+	return imgResizePath, nil
 }

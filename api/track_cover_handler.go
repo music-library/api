@@ -2,12 +2,12 @@ package api
 
 import (
 	"fmt"
-	"os/exec"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/global"
+	"gitlab.com/music-library/music-api/indexer"
 )
 
 func TrackCoverHandler(c *fiber.Ctx) error {
@@ -31,14 +31,8 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	}
 
 	if len(c.Params("size")) > 0 {
-		// Check if cover exists in global Cache
-		imgSizePath := fmt.Sprintf("%s/%s.jpg", track.IdAlbum, c.Params("size"))
-
-		if !global.Cache.Exists(imgSizePath) {
-			exec.Command("vipsthumbnail", global.Cache.FilePath(imgPath), "--size", c.Params("size"), "-o", fmt.Sprintf("%s[Q=90]", global.Cache.FilePath(imgSizePath))).Run()
-		}
-
-		return c.SendFile(global.Cache.FilePath(imgSizePath))
+		imgResizePath, _ := indexer.ResizeTrackCover(track.IdAlbum, c.Params("size"))
+		return c.SendFile(global.Cache.FilePath(imgResizePath))
 	}
 
 	return c.SendFile(global.Cache.FilePath(imgPath))

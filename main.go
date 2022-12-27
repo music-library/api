@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"sync"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -64,6 +65,7 @@ func main() {
 		// Read metadata from cache
 		indexCache := global.Cache.ReadAndParseMetadata()
 
+		start := time.Now()
 		var await sync.WaitGroup
 
 		// Populate metadata
@@ -90,12 +92,14 @@ func main() {
 					if trackCover != nil {
 						// Save to global Cache
 						global.Cache.Add(indexFile.IdAlbum, "cover.jpg", trackCover)
+						indexer.ResizeTrackCover(indexFile.IdAlbum, "600")
 					}
 				}
 			})(indexFile)
 		}
 
 		await.Wait()
+		log.Debug("main/metadata took ", time.Since(start))
 
 		// Cache metadata
 		metadataJSON, err := sonic.Marshal(global.Index)
