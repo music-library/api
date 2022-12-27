@@ -18,14 +18,14 @@ func TrackHandler(c *fiber.Ctx) error {
 
 	if !ok {
 		log.Error("http/track/" + trackId + " track does not exist")
-		return c.Status(500).Send([]byte("{}"))
+		return Error(c, 404, "track does not exist")
 	}
 
 	trackJSON, err := sonic.Marshal(track)
 
 	if err != nil {
 		log.Error("http/track/" + trackId + " failed to marshal track json")
-		return c.Status(500).Send([]byte("{}"))
+		return Error(c, 500, "failed to marshal track json")
 	}
 
 	return c.Send(trackJSON)
