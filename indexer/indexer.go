@@ -14,6 +14,7 @@ import (
 
 type IndexFile struct {
 	Id       string    `json:"id"`
+	IdAlbum  string    `json:"id_album"`
 	Path     string    `json:"path"`
 	Metadata *Metadata `json:"metadata"`
 	// Stats    *Stat     `json:"stats"`
@@ -22,6 +23,8 @@ type IndexFile struct {
 type Index struct {
 	Files map[string]*IndexFile
 	// Albums [][]string // Slice of IndexFile.Id
+	// Genres []string
+	// Decades []string
 }
 
 // Populate File index with audio `IndexFile` objects
@@ -35,8 +38,8 @@ func (index *Index) Populate(path string) {
 			return nil
 		}
 
-		if !entry.IsDir() && isFileAudio(itemPath) {
-			itemId := hashString(itemPath)
+		if !entry.IsDir() && IsFileAudio(itemPath) {
+			itemId := HashString(itemPath)
 
 			index.Files[itemId] = &IndexFile{
 				Id:       itemId,
@@ -58,12 +61,14 @@ func (index *Index) Populate(path string) {
 
 // Populate IndexFile with actual metadata
 func (index *Index) PopulateFileMetadata(indexFile *IndexFile) *IndexFile {
-	if indexFile.Metadata.Title == "(unknown)" {
+	if index.Files[indexFile.Id].Metadata.Title == "(unknown)" {
 		metadata := GetTrackMetadata(indexFile.Path)
-		indexFile.Metadata = metadata
+		index.Files[indexFile.Id].Metadata = metadata
 	}
 
-	return indexFile
+	index.Files[indexFile.Id].IdAlbum = HashString(index.Files[indexFile.Id].Metadata.Album + index.Files[indexFile.Id].Metadata.Album_artist)
+
+	return index.Files[indexFile.Id]
 }
 
 // Crawl each file in the index
@@ -74,13 +79,13 @@ func (index *Index) Crawl(callback func(IndexFile)) {
 }
 
 // Check if file is audio file
-func isFileAudio(path string) bool {
+func IsFileAudio(path string) bool {
 	ext := strings.ToLower(filepath.Ext(path))
 	return ext == ".flac" || ext == ".mp3" || ext == ".ogg" || ext == ".wav"
 }
 
 // Hash string using SHA1, returns a string.
-func hashString(str string) string {
+func HashString(str string) string {
 	// Store string in buffer array
 	buf := []byte(str)
 

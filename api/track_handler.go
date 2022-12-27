@@ -21,8 +21,6 @@ func TrackHandler(c *fiber.Ctx) error {
 		return c.Status(500).Send([]byte("{}"))
 	}
 
-	global.Index.PopulateFileMetadata(track)
-
 	trackJSON, err := sonic.Marshal(track)
 
 	if err != nil {

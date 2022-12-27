@@ -7,3 +7,7 @@ import (
 var Index = indexer.Index{
 	Files: make(map[string]*indexer.IndexFile, 5000),
 }
+
+var Cache = indexer.Cache{
+	Path: DATA_DIR,
+}

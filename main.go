@@ -2,14 +2,15 @@ package main
 
 import (
 	"os"
+	"sync"
 
 	"github.com/bytedance/sonic"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
 	"gitlab.com/music-library/music-api/global"
+	"gitlab.com/music-library/music-api/indexer"
 	"gitlab.com/music-library/music-api/version"
 )
 
@@ -51,12 +52,38 @@ func main() {
 	go (func() {
 		global.Index.Populate(global.MUSIC_DIR)
 
+		var await sync.WaitGroup
+
 		// Populate metadata
 		for _, indexFile := range global.Index.Files {
-			go (func() {
+			await.Add(1)
+
+			go (func(indexFile *indexer.IndexFile) {
+				defer await.Done()
 				global.Index.PopulateFileMetadata(indexFile)
-			})()
+
+				// Cover
+				if !global.Cache.Exists(indexFile.IdAlbum + "/cover.jpg") {
+					trackCover, _ := indexer.GetTrackCover(indexFile.Path)
+
+					if trackCover != nil {
+						// Save to global Cache
+						global.Cache.Add(indexFile.IdAlbum, "cover.jpg", trackCover)
+					}
+				}
+			})(indexFile)
 		}
+
+		await.Wait()
+
+		// Cache metadata
+		metadataJSON, err := sonic.Marshal(global.Index)
+
+		if err != nil {
+			log.Error("main/metadata/cache failed to marshal metadata ", err)
+		}
+
+		global.Cache.Replace(".", "metadata.json", metadataJSON)
 	})()
 
 	// Listen

@@ -41,6 +41,10 @@ func (cache *Cache) Read(path string) ([]byte, error) {
 func (cache *Cache) Replace(path string, fileName string, data []byte) error {
 	fullPath := cache.FilePath(path + "/" + fileName)
 
+	if _, err := os.Stat(cache.Path + "/" + path); os.IsNotExist(err) {
+		os.Mkdir(cache.Path+"/"+path, 0755)
+	}
+
 	err := os.WriteFile(fullPath, data, 0766)
 
 	if err != nil {

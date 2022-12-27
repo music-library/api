@@ -104,7 +104,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 	}
 	baseMeta.Year = year
 
-	genre := meta.Genre()
+	genre := cases.Title(language.AmericanEnglish).String(meta.Genre())
 	if len(genre) == 0 {
 		genre = "~"
 	}
@@ -116,6 +116,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 	}
 	baseMeta.Composer = composer
 
+	// @TODO
 	// baseMeta.Duration = meta.Duration()
 
 	return baseMeta
