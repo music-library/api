@@ -52,9 +52,13 @@ func main() {
 		os.Mkdir(global.DATA_DIR, 0755)
 	}
 
-	// Populate the index
+	// Async index population (to prevent blocking the server)
 	go (func() {
+		// Populate the index
 		global.Index.Populate(global.MUSIC_DIR)
+
+		// Read metadata from cache
+		indexCache := global.Cache.ReadAndParseMetadata()
 
 		var await sync.WaitGroup
 
@@ -64,7 +68,16 @@ func main() {
 
 			go (func(indexFile *indexer.IndexFile) {
 				defer await.Done()
-				global.Index.PopulateFileMetadata(indexFile)
+
+				// Check if track metadata is cached
+				cachedTrack, isCached := indexCache.Files[indexFile.Id]
+
+				if isCached {
+					indexFile.IdAlbum = cachedTrack.IdAlbum
+					indexFile.Metadata = cachedTrack.Metadata
+				} else {
+					global.Index.PopulateFileMetadata(indexFile)
+				}
 
 				// Cover
 				if !global.Cache.Exists(indexFile.IdAlbum + "/cover.jpg") {
