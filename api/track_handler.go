@@ -24,8 +24,8 @@ func TrackHandler(c *fiber.Ctx) error {
 	trackJSON, err := sonic.Marshal(track)
 
 	if err != nil {
-		log.Error("http/track/" + trackId + " failed to marshal track json")
-		return Error(c, 500, "failed to marshal track json")
+		log.Error("http/track/" + trackId + " failed to marshal track")
+		return Error(c, 500, "failed to marshal track")
 	}
 
 	return c.Send(trackJSON)
