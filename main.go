@@ -21,6 +21,16 @@ import (
 // diff = time.Now().Sub(start)
 
 func init() {
+	// Create data directory
+	if _, err := os.Stat(global.DATA_DIR); os.IsNotExist(err) {
+		os.Mkdir(global.DATA_DIR, 0755)
+	}
+
+	// Create music directory
+	if _, err := os.Stat(global.MUSIC_DIR); os.IsNotExist(err) {
+		os.Mkdir(global.MUSIC_DIR, 0755)
+	}
+
 	MakeLogger(global.LOG_FILE)
 }
 
@@ -45,12 +55,6 @@ func main() {
 
 	// Setup the router
 	api.ApiRoutes(app)
-
-	// Create data directory
-	if _, err := os.Stat(global.DATA_DIR); os.IsNotExist(err) {
-		log.Debug("creating data directory " + global.DATA_DIR)
-		os.Mkdir(global.DATA_DIR, 0755)
-	}
 
 	// Async index population (to prevent blocking the server)
 	go (func() {
