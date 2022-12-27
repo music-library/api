@@ -2,6 +2,7 @@ package indexer
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/bytedance/sonic"
 	log "github.com/sirupsen/logrus"
@@ -12,7 +13,14 @@ type Cache struct {
 }
 
 func (cache *Cache) FilePath(path string) string {
-	return cache.Path + "/" + path
+	relativePath := cache.Path + "/" + path
+	absolutePath, err := filepath.Abs(relativePath)
+
+	if err != nil {
+		return relativePath
+	}
+
+	return absolutePath
 }
 
 func (cache *Cache) Exists(path string) bool {
