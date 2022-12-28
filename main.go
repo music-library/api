@@ -100,7 +100,7 @@ func main() {
 		}
 
 		await.Wait()
-		log.Debug("main/metadata took ", time.Since(start))
+		log.Info("main/metadata took ", time.Since(start))
 
 		// Cache metadata
 		metadataJSON, err := sonic.Marshal(global.Index)
@@ -113,6 +113,6 @@ func main() {
 	})()
 
 	// Listen
-	log.Debug("music-api server listening on " + ListenAddr())
+	log.Info("music-api server listening on " + ListenAddr())
 	log.Fatal(app.Listen(ListenAddr()))
 }
