@@ -1,7 +1,11 @@
 **/*.exe
 **/music-api
+**/music-api-dev
 
 bin/
+tmp/
+data/
+music/
 target/
 .idea/
 
@@ -10,3 +14,4 @@ job.nomad
 *.log
 *.tar
 *.tar.gz
+metadata.json

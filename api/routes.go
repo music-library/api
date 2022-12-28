@@ -5,16 +5,18 @@ import (
 )
 
 func ApiRoutes(router fiber.Router) {
+	router.All("/", BaseHandler)
+
 	// Track
-	router.Get("/tracks", MockHandler)
-	router.Get("/track/:id", MockHandler)
-	router.Get("/track/:id/audio", MockHandler)
-	router.Get("/track/:id/cover/:size?", MockHandler)
+	router.Get("/tracks", TracksHandler)
+	router.Get("/track/:id", TrackHandler)
+	router.Get("/track/:id/audio", TrackAudioHandler)
+	router.Get("/track/:id/cover/:size?", TrackCoverHandler)
 
 	// Album
-	router.Get("/albums", MockHandler)
+	router.Get("/albums", BaseHandler)
 
 	// Health
-	router.Get("/health", MockHandler)
-	router.Get("/health/metrics", MockHandler) // Prometheus style metrics?
+	router.Get("/health", HealthHandler)
+	router.Get("/health/metrics", HealthHandler) // Prometheus style metrics?
 }

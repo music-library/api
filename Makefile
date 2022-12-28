@@ -15,7 +15,12 @@ vet: fmt
 
 bootstrap:
 	go mod download
+	go get github.com/cosmtrek/air
+	go get github.com/mitchellh/gox
+	go get gotest.tools/gotestsum
+	go install github.com/cosmtrek/air
 	go install github.com/mitchellh/gox
+	go install gotest.tools/gotestsum
 	go generate -tags tools tools/tools.go
 
 #
@@ -23,18 +28,18 @@ bootstrap:
 #
 
 run:
-	go run .
+	air
+
+rundev:
+	.\air.exe
 
 test:
-	go test --cover ./...
+# go test --cover ./...
+	go clean -testcache
+	gotestsum --format pkgname -- --cover ./...
 
 bench:
 	go test --cover -bench . -benchmem ./...
-
-# Reflex doesn't work on windows :(
-# @TODO: implement an equivalent file watcher
-#watch:
-#	reflex -s -r '*.go' make run
 
 #
 # Build
@@ -42,6 +47,15 @@ bench:
 
 buildq:
 	go build -ldflags "-s -w" .
+
+builddev:
+	go build -ldflags "-s -w" -tags "music-api-dev" -o "bin/music-api-dev.exe" .
+
+builddocker:
+	docker stop music-api
+	docker rm music-api
+	docker build --no-cache -t music-api .
+#docker run -d --name music-api -p 80:80 music-api
 
 build: vet
 	gox -osarch "linux/amd64 windows/amd64" \

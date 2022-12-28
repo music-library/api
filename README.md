@@ -6,13 +6,13 @@ API for the Music-Library project, written in Go.
 
 ### Core
 
--   [ ] `/tracks`
+-   [x] `/tracks`
 -   [ ] `/albums` - array of trackIds (maybe an object with hash of album + album artist?)
--   [ ] `/track/:id`
--   [ ] `/track/:id/audio`
--   [ ] `/track/:id/cover/:size?`
--   [ ] Extract metadata
--   [ ] Cache metadata
+-   [x] `/track/:id`
+-   [x] `/track/:id/audio`
+-   [x] `/track/:id/cover/:size?`
+-   [x] Extract metadata
+-   [x] Cache metadata
 
 ### Additional
 
@@ -23,7 +23,7 @@ API for the Music-Library project, written in Go.
         -   [ ] Default library needs to be set so FE is never blocked on what to load
         -   [ ] Available libraries need to be sent to the FE
         -   [ ] UI changes to select/swap library
--   [ ] `/health`
+-   [x] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
 -   [ ] Get average + primary color of album cover
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
@@ -41,3 +41,24 @@ API for the Music-Library project, written in Go.
 -   [ ] `/track/search/:query` - return audio (same as `/track/:id/audio`) - Useful for searching for a song and playing it directly
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
     -   [ ] Chat? - encrypted maybe?
+
+## Development
+
+### ENV
+
+-   `HOST` - Host to run the server on (default: `localhost`)
+-   `PORT` - Port to run the server on (default: `3001`)
+-   `LOG_LEVEL` - Log severity level (default: `error`)
+-   `LOG_FILE` - Log file (default: `DATA_DIR/music-api.log`)
+-   `DATA_DIR` - Data directory to cache and store info (default: `./data`)
+-   `MUSIC_DIR` - Music directory - where all your lovely music is :) (default: `./music`)
+
+### Setup
+
+```bash
+$ make bootstrap
+```
+
+```bash
+$ make rundev
+```
