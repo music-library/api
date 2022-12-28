@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/cosmtrek/air v1.40.4
 	github.com/gofiber/fiber/v2 v2.40.1
+	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/mitchellh/gox v1.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
@@ -12,6 +13,7 @@ require (
 
 require (
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
