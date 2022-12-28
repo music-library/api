@@ -9,7 +9,7 @@ API for the Music-Library project, written in Go.
 -   [x] `/tracks`
 -   [ ] `/albums` - array of trackIds (maybe an object with hash of album + album artist?)
 -   [x] `/track/:id`
--   [ ] `/track/:id/audio`
+-   [x] `/track/:id/audio`
 -   [x] `/track/:id/cover/:size?`
 -   [x] Extract metadata
 -   [x] Cache metadata
