@@ -68,7 +68,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 
 	title := meta.Title()
 	if len(title) == 0 {
-		// Use filename as title
+		// Use filename as title if no title is found
 		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 
 		// Attempt to clean up title (worth a shot)
@@ -151,7 +151,12 @@ func ResizeTrackCover(idAlbum string, size string) (string, error) {
 	imgResizePath := fmt.Sprintf("%s/%s.jpg", idAlbum, size)
 
 	if !cache.Exists(imgResizePath) {
-		exec.Command("vipsthumbnail", cache.FilePath(imgPath), "--size", size, "-o", fmt.Sprintf("%s[Q=90]", cache.FilePath(imgResizePath))).Run()
+		err := exec.Command("vipsthumbnail", cache.FilePath(imgPath), "--size", size, "-o", fmt.Sprintf("%s[Q=90]", cache.FilePath(imgResizePath))).Run()
+
+		if err != nil {
+			log.Error("index/metadata failed to resize album cover image " + idAlbum + " err: " + err.Error())
+			return imgPath, err
+		}
 	}
 
 	return imgResizePath, nil
