@@ -21,7 +21,8 @@ type IndexFile struct {
 }
 
 type Index struct {
-	Files map[string]*IndexFile
+	Files      map[string]*IndexFile
+	FilesCount uint64
 	// Albums [][]string // Slice of IndexFile.Id
 	// Genres []string
 	// Decades []string
@@ -41,6 +42,7 @@ func (index *Index) Populate(path string) {
 		if !entry.IsDir() && IsFileAudio(itemPath) {
 			itemId := HashString(itemPath)
 
+			index.FilesCount += 1
 			index.Files[itemId] = &IndexFile{
 				Id:       itemId,
 				Path:     itemPath,

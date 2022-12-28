@@ -17,6 +17,6 @@ func ApiRoutes(router fiber.Router) {
 	router.Get("/albums", BaseHandler)
 
 	// Health
-	router.Get("/health", BaseHandler)
-	router.Get("/health/metrics", BaseHandler) // Prometheus style metrics?
+	router.Get("/health", HealthHandler)
+	router.Get("/health/metrics", HealthHandler) // Prometheus style metrics?
 }
