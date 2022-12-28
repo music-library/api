@@ -23,7 +23,7 @@ API for the Music-Library project, written in Go.
         -   [ ] Default library needs to be set so FE is never blocked on what to load
         -   [ ] Available libraries need to be sent to the FE
         -   [ ] UI changes to select/swap library
--   [ ] `/health`
+-   [x] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
 -   [ ] Get average + primary color of album cover
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
