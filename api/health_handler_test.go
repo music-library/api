@@ -1,14 +1,15 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/music-library/music-api/global"
+	"gitlab.com/music-library/music-api/indexer"
 )
 
 func TestHealthHandler(t *testing.T) {
@@ -48,7 +49,7 @@ func TestHealthHandler(t *testing.T) {
 			route:              "/health",
 			method:             "GET",
 			expectedStatusCode: 200,
-			tracksCount:        45678,
+			tracksCount:        456,
 			res: fiber.Map{
 				"message": "ok",
 				"ok":      true,
@@ -57,14 +58,20 @@ func TestHealthHandler(t *testing.T) {
 	}
 
 	// Define Fiber app.
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName:     "music-api",
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
 
 	// Create route with GET method for test
 	app.Get("/health", HealthHandler)
 
 	// Iterate through single test cases
 	for _, test := range tests {
-		global.Index.TracksCount = test.tracksCount
+		index := indexer.TestGenerateIndex(test.tracksCount)
+		global.Index.Tracks = index.Tracks
+		global.Index.TracksCount = index.TracksCount
 
 		// Create a new http request with the route from the test case
 		req := httptest.NewRequest(test.method, test.route, nil)
@@ -72,9 +79,9 @@ func TestHealthHandler(t *testing.T) {
 		// Perform the request plain with the app,
 		// the second argument is a request latency
 		// (set to -1 for no latency)
-		resp, _ := app.Test(req, 1)
+		resp, _ := app.Test(req, -1)
 
-		res, _ := sonic.Marshal(test.res)
+		res, _ := json.Marshal(test.res)
 		body, _ := io.ReadAll(resp.Body)
 
 		// Verify, if the status code is as expected
