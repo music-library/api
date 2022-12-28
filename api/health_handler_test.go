@@ -17,7 +17,7 @@ func TestHealthHandler(t *testing.T) {
 		route              string
 		method             string // HTTP method
 		expectedStatusCode int    // Expected HTTP status code
-		filesCount         uint64
+		tracksCount        uint64
 		res                fiber.Map
 	}{
 		// Add test cases here
@@ -26,7 +26,7 @@ func TestHealthHandler(t *testing.T) {
 			route:              "/health",
 			method:             "GET",
 			expectedStatusCode: 500,
-			filesCount:         0,
+			tracksCount:        0,
 			res: fiber.Map{
 				"message": "track index is empty",
 				"ok":      false,
@@ -37,7 +37,7 @@ func TestHealthHandler(t *testing.T) {
 			route:              "/health",
 			method:             "GET",
 			expectedStatusCode: 200,
-			filesCount:         1,
+			tracksCount:        1,
 			res: fiber.Map{
 				"message": "ok",
 				"ok":      true,
@@ -48,7 +48,7 @@ func TestHealthHandler(t *testing.T) {
 			route:              "/health",
 			method:             "GET",
 			expectedStatusCode: 200,
-			filesCount:         45678,
+			tracksCount:        45678,
 			res: fiber.Map{
 				"message": "ok",
 				"ok":      true,
@@ -64,7 +64,7 @@ func TestHealthHandler(t *testing.T) {
 
 	// Iterate through single test cases
 	for _, test := range tests {
-		global.Index.FilesCount = test.filesCount
+		global.Index.TracksCount = test.tracksCount
 
 		// Create a new http request with the route from the test case
 		req := httptest.NewRequest(test.method, test.route, nil)

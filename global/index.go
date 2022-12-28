@@ -3,8 +3,8 @@ package global
 import "gitlab.com/music-library/music-api/indexer"
 
 var Index = indexer.Index{
-	Files:      make(map[string]*indexer.IndexFile, 5000),
-	FilesCount: 0,
+	Tracks:      make(map[string]*indexer.IndexTrack, 5000),
+	TracksCount: 0,
 }
 
 var Cache = indexer.Cache{

@@ -15,7 +15,7 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	c.Response().Header.Add("Content-Type", "image/jpg")
 
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := global.Index.Files[trackId]
+	track, ok := global.Index.Tracks[trackId]
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/cover track does not exist")

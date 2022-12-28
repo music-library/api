@@ -10,7 +10,7 @@ func HealthHandler(c *fiber.Ctx) error {
 	status := 200
 	ok := true
 
-	if global.Index.FilesCount == 0 {
+	if global.Index.TracksCount == 0 {
 		message = "track index is empty"
 		status = 500
 		ok = false

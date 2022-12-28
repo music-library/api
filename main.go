@@ -69,33 +69,33 @@ func main() {
 		var await sync.WaitGroup
 
 		// Populate metadata
-		for _, indexFile := range global.Index.Files {
+		for _, indexTrack := range global.Index.Tracks {
 			await.Add(1)
 
-			go (func(indexFile *indexer.IndexFile) {
+			go (func(indexTrack *indexer.IndexTrack) {
 				defer await.Done()
 
 				// Check if track metadata is cached
-				cachedTrack, isCached := indexCache.Files[indexFile.Id]
+				cachedTrack, isCached := indexCache.Tracks[indexTrack.Id]
 
 				if isCached {
-					indexFile.IdAlbum = cachedTrack.IdAlbum
-					indexFile.Metadata = cachedTrack.Metadata
+					indexTrack.IdAlbum = cachedTrack.IdAlbum
+					indexTrack.Metadata = cachedTrack.Metadata
 				} else {
-					global.Index.PopulateFileMetadata(indexFile)
+					global.Index.PopulateFileMetadata(indexTrack)
 				}
 
 				// Cover
-				if !global.Cache.Exists(indexFile.IdAlbum + "/cover.jpg") {
-					trackCover, _ := indexer.GetTrackCover(indexFile.Path)
+				if !global.Cache.Exists(indexTrack.IdAlbum + "/cover.jpg") {
+					trackCover, _ := indexer.GetTrackCover(indexTrack.Path)
 
 					if trackCover != nil {
 						// Save to global Cache
-						global.Cache.Add(indexFile.IdAlbum, "cover.jpg", trackCover)
-						indexer.ResizeTrackCover(indexFile.IdAlbum, "600")
+						global.Cache.Add(indexTrack.IdAlbum, "cover.jpg", trackCover)
+						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600")
 					}
 				}
-			})(indexFile)
+			})(indexTrack)
 		}
 
 		await.Wait()

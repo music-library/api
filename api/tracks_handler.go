@@ -11,7 +11,7 @@ import (
 func TracksHandler(c *fiber.Ctx) error {
 	c.Response().Header.Add("Content-Type", "application/json")
 
-	trackJSON, err := sonic.Marshal(global.Index.Files)
+	trackJSON, err := sonic.Marshal(global.Index.Tracks)
 
 	if err != nil {
 		log.Error("http/tracks failed to marshal tracks")
