@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
+	"gitlab.com/music-library/music-api/static"
 )
 
 func TrackCoverHandler(c *fiber.Ctx) error {
@@ -18,16 +19,14 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/cover track does not exist")
-		return Error(c, 500, "track does not exist")
-		// @TODO: Send default cover
+		return c.Send(getDefaultCover())
 	}
 
 	imgPath := fmt.Sprintf("%s/cover.jpg", track.IdAlbum)
 
 	if !global.Cache.Exists(imgPath) {
 		log.Error("http/track/" + trackId + "/cover cover does not exist")
-		return Error(c, 500, "cover does not exist")
-		// @TODO: Send default cover
+		return c.Send(getDefaultCover())
 	}
 
 	if len(c.Params("size")) > 0 {
@@ -36,4 +35,14 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	}
 
 	return c.SendFile(global.Cache.FilePath(imgPath))
+}
+
+func getDefaultCover() []byte {
+	data, err := static.Images.ReadFile("images/image-placeholder.jpg")
+
+	if err != nil {
+		log.Error("http/track/cover failed to getDefaultCover() " + err.Error())
+	}
+
+	return data
 }

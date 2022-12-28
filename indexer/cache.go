@@ -27,7 +27,7 @@ func (cache *Cache) Exists(path string) bool {
 	fullPath := cache.FilePath(path)
 
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		log.Debug("cache/exists file does not exist " + fullPath)
+		log.Debug("cache/exists file does not exist " + cache.Path + "/" + path)
 		return false
 	}
 
@@ -40,7 +40,7 @@ func (cache *Cache) Read(path string) ([]byte, error) {
 	data, err := os.ReadFile(fullPath)
 
 	if err != nil {
-		log.Error("cache/read failed to open cache file " + fullPath)
+		log.Error("cache/read failed to open cache file " + cache.Path + "/" + path)
 		return nil, err
 	}
 
@@ -57,11 +57,11 @@ func (cache *Cache) Replace(path string, fileName string, data []byte) error {
 	err := os.WriteFile(fullPath, data, 0766)
 
 	if err != nil {
-		log.Error("cache/replace failed to add cache file " + fullPath)
+		log.Error("cache/replace failed to add cache file " + cache.Path + "/" + path)
 		return err
 	}
 
-	log.Debug("cache/replace " + fullPath)
+	log.Debug("cache/replace " + cache.Path + "/" + path)
 	return nil
 }
 
