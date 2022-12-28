@@ -81,6 +81,7 @@ func main() {
 				if isCached {
 					indexTrack.IdAlbum = cachedTrack.IdAlbum
 					indexTrack.Metadata = cachedTrack.Metadata
+					indexTrack.Stats = cachedTrack.Stats
 				} else {
 					global.Index.PopulateFileMetadata(indexTrack)
 				}

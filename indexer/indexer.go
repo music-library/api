@@ -17,7 +17,7 @@ type IndexTrack struct {
 	IdAlbum  string    `json:"id_album"`
 	Path     string    `json:"path"`
 	Metadata *Metadata `json:"metadata"`
-	// Stats    *Stat     `json:"stats"`
+	Stats    *Stat     `json:"stats"`
 }
 
 type Index struct {
@@ -47,7 +47,7 @@ func (index *Index) Populate(path string) {
 				Id:       itemId,
 				Path:     itemPath,
 				Metadata: GetEmptyMetadata(),
-				// Metadata: GetTrackMetadata(itemPath),
+				Stats:    GetEmptyStat(),
 			}
 		}
 
@@ -68,7 +68,7 @@ func (index *Index) PopulateFileMetadata(indexTrack *IndexTrack) *IndexTrack {
 		index.Tracks[indexTrack.Id].Metadata = metadata
 	}
 
-	index.Tracks[indexTrack.Id].IdAlbum = HashString(index.Tracks[indexTrack.Id].Metadata.Album + index.Tracks[indexTrack.Id].Metadata.Album_artist)
+	index.Tracks[indexTrack.Id].IdAlbum = HashString(index.Tracks[indexTrack.Id].Metadata.Album + index.Tracks[indexTrack.Id].Metadata.AlbumArtist)
 
 	return index.Tracks[indexTrack.Id]
 }

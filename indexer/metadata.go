@@ -14,30 +14,42 @@ import (
 	"golang.org/x/text/language"
 )
 
+type Stat struct {
+	TimesPlayed uint64 `json:"timesPlayed"`
+	LastPlayed  int64  `json:"lastPlayed"`
+}
+
+func GetEmptyStat() *Stat {
+	return &Stat{
+		TimesPlayed: 0,
+		LastPlayed:  -1,
+	}
+}
+
 type Metadata struct {
-	Track        int    `json:"track"`
-	Title        string `json:"title"`
-	Artist       string `json:"artist"`
-	Album_artist string `json:"album_artist"`
-	Album        string `json:"album"`
-	Year         string `json:"year"`
-	Genre        string `json:"genre"`
-	Composer     string `json:"composer"`
-	Duration     int    `json:"duration"` // in seconds
+	Track       int    `json:"track"`
+	Title       string `json:"title"`
+	Artist      string `json:"artist"`
+	AlbumArtist string `json:"album_artist"`
+	Album       string `json:"album"`
+	Year        string `json:"year"`
+	Genre       string `json:"genre"`
+	Composer    string `json:"composer"`
+	Duration    int    `json:"duration"` // in seconds
 	// Cover     not here -> stored in cache
 }
 
 func GetEmptyMetadata() *Metadata {
 	return &Metadata{
-		Track:        0,
-		Title:        "(unknown)",
-		Artist:       "~",
-		Album_artist: "~",
-		Album:        "~",
-		Year:         "~",
-		Genre:        "~",
-		Composer:     "~",
-		Duration:     0,
+		Track:       0,
+		Title:       "(unknown)",
+		Artist:      "~",
+		AlbumArtist: "~",
+		Album:       "~",
+		Year:        "~",
+		Genre:       "~",
+		Composer:    "~",
+		Duration:    0,
 	}
 }
 
@@ -91,7 +103,7 @@ func GetTrackMetadata(filePath string) *Metadata {
 	if len(albumArtist) == 0 {
 		albumArtist = "~"
 	}
-	baseMeta.Album_artist = albumArtist
+	baseMeta.AlbumArtist = albumArtist
 
 	album := meta.Album()
 	if len(album) == 0 {

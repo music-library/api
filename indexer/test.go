@@ -28,14 +28,14 @@ func TestGenerateIndex(count uint64) *Index {
 
 func TestGenerateMetadata() *Metadata {
 	return &Metadata{
-		Track:        fake.Day(),
-		Title:        fake.Characters(),
-		Artist:       fake.FullName(),
-		Album_artist: fake.FullName(),
-		Album:        fake.Characters(),
-		Year:         fmt.Sprint(fake.Year(1700, 2022)),
-		Genre:        fake.Characters(),
-		Composer:     fake.FullName(),
-		Duration:     fake.Day(),
+		Track:       fake.Day(),
+		Title:       fake.Characters(),
+		Artist:      fake.FullName(),
+		AlbumArtist: fake.FullName(),
+		Album:       fake.Characters(),
+		Year:        fmt.Sprint(fake.Year(1700, 2022)),
+		Genre:       fake.Characters(),
+		Composer:    fake.FullName(),
+		Duration:    fake.Day(),
 	}
 }

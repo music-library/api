@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
@@ -29,6 +30,10 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		log.Error("http/track/" + trackId + "/audio track failed to play")
 		return Error(c, 500, "track failed to play")
 	}
+
+	// Update track stats
+	track.Stats.TimesPlayed += 1
+	track.Stats.LastPlayed = time.Now().Unix()
 
 	mimeType := mime.TypeByExtension(filepath.Ext(track.Path))
 
