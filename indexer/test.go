@@ -1,7 +1,6 @@
 package indexer
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/icrowley/fake"
@@ -39,13 +38,4 @@ func TestGenerateMetadata() *Metadata {
 		Composer:     fake.FullName(),
 		Duration:     fake.Day(),
 	}
-}
-
-func JSONRemarshal(bytes []byte) ([]byte, error) {
-	var ifce interface{}
-	err := json.Unmarshal(bytes, &ifce)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(ifce)
 }
