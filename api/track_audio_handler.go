@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"io"
 	"mime"
 	"os"
 	"path/filepath"
@@ -58,22 +57,24 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 			end = totalSize - 1
 		}
 
-		chunksize := end - start + 1
-
 		file, err := os.Open(track.Path)
 		if err != nil {
-			log.Error("http/track/" + trackId + "/audio track failed to play")
+			log.Error("http/track/" + trackId + "/audio track file failed to open")
 		}
-
 		defer file.Close()
-		file.Seek(start, 0)
-		fileReader := io.LimitReader(file, totalSize-start)
+
+		chunksize := end - start + 1
+		buffer := make([]byte, chunksize)
+		bytesread, err := file.ReadAt(buffer, start)
+		if err != nil {
+			log.Error("http/track/" + trackId + "/audio track file failed to read correctly")
+		}
 
 		c.Set(fiber.HeaderAcceptRanges, "bytes")
 		c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", start, end, totalSize))
 		c.Set(fiber.HeaderContentLength, fmt.Sprint(chunksize))
 
-		return c.SendStream(fileReader)
+		return c.Status(206).Send(buffer[:bytesread])
 	}
 
 	return c.SendFile(track.Path, false)
