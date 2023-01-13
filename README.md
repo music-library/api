@@ -36,6 +36,8 @@ API for the Music-Library project, written in Go.
 -   [ ] benchmarks
 -   [ ] n-gram search
 -   [ ] playlists?
+-   [ ] video support - also stream audio only via ffmpeg on-the-fly streams
+-   [ ] link straight to playing a track (track # in url - only plays if no track is playing)
 -   [ ] file watcher, re-index after file change (wait a bit before re-indexing to avoid spamming)
 -   [ ] `/track/random`
 -   [ ] `/track/search/:query` - return audio (same as `/track/:id/audio`) - Useful for searching for a song and playing it directly
