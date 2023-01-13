@@ -71,6 +71,7 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		chunksize := end - start + 1
 		buffer := make([]byte, chunksize)
 		bytesread, err := file.ReadAt(buffer, start)
+
 		if err != nil {
 			log.Error("http/track/" + trackId + "/audio track file failed to read correctly")
 		}

@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/hmerritt/go-ngram"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
 	"gitlab.com/music-library/music-api/global"
@@ -65,14 +66,17 @@ func main() {
 		// Read metadata from cache
 		indexCache := global.Cache.ReadAndParseMetadata()
 
+		counter := 0
 		start := time.Now()
 		var await sync.WaitGroup
+		mapMutex := sync.RWMutex{}
 
 		// Populate metadata
 		for _, indexTrack := range global.Index.Tracks {
 			await.Add(1)
+			counter++
 
-			go (func(indexTrack *indexer.IndexTrack) {
+			go (func(indexTrack *indexer.IndexTrack, counter int) {
 				defer await.Done()
 
 				// Check if track metadata is cached
@@ -86,6 +90,11 @@ func main() {
 					global.Index.PopulateFileMetadata(indexTrack)
 				}
 
+				// Add to ngram index
+				mapMutex.Lock()
+				global.Ngram.Add(indexer.GetTrackNgramString(indexTrack), ngram.NewIndexValue(counter, indexTrack))
+				mapMutex.Unlock()
+
 				// Cover
 				if !global.Cache.Exists(indexTrack.IdAlbum + "/cover.jpg") {
 					trackCover, _ := indexer.GetTrackCover(indexTrack.Path)
@@ -96,7 +105,7 @@ func main() {
 						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600")
 					}
 				}
-			})(indexTrack)
+			})(indexTrack, counter)
 		}
 
 		await.Wait()

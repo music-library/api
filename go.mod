@@ -30,6 +30,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/hashicorp/go-version v1.0.0 // indirect
+	github.com/hmerritt/go-ngram v1.0.5
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

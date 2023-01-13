@@ -20,6 +20,8 @@ type IndexTrack struct {
 	Stats    *Stat     `json:"stats"`
 }
 
+// Tracks as array
+// Object with key as track id, value as arr index
 type Index struct {
 	Tracks      map[string]*IndexTrack
 	TracksCount uint64
@@ -78,6 +80,10 @@ func (index *Index) Crawl(callback func(IndexTrack)) {
 	for _, v := range index.Tracks {
 		callback(*v)
 	}
+}
+
+func GetTrackNgramString(indexTrack *IndexTrack) string {
+	return strings.ToLower(fmt.Sprintf("%s %s %s %s", indexTrack.Metadata.Album, indexTrack.Metadata.AlbumArtist, indexTrack.Metadata.Artist, indexTrack.Metadata.Title))
 }
 
 // Check if file is audio file
