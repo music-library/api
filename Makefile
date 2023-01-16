@@ -30,11 +30,7 @@ bootstrap:
 run:
 	air
 
-rundev:
-	.\air.exe
-
 test:
-# go test --cover ./...
 	go clean -testcache
 	gotestsum --format pkgname -- --cover ./...
 

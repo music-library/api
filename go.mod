@@ -3,7 +3,7 @@ module gitlab.com/music-library/music-api
 go 1.18
 
 require (
-	github.com/cosmtrek/air v1.40.4
+	github.com/cosmtrek/air v1.41.0
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/mitchellh/gox v1.0.1
@@ -22,22 +22,22 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/bytedance/sonic v1.6.0
-	github.com/creack/pty v1.1.11 // indirect
+	github.com/creack/pty v1.1.18 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dhowden/tag v0.0.0-20220618230019-adf36e896086
 	github.com/dnephin/pflag v1.0.7 // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/hashicorp/go-version v1.0.0 // indirect
 	github.com/hmerritt/go-ngram v1.0.5
-	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mitchellh/iochan v1.0.0 // indirect
-	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -50,5 +50,5 @@ require (
 	golang.org/x/text v0.5.0
 	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gotest.tools/gotestsum v1.8.2
+	gotest.tools/gotestsum v1.9.0
 )
