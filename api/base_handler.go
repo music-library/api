@@ -10,6 +10,8 @@ func BaseHandler(c *fiber.Ctx) error {
 		"message": "Hello, World 👋!",
 		"version": version.Version,
 		"routes": []string{
+			"/",
+			"/main",
 			"/tracks",
 			"/track/:id",
 			"/track/:id/audio",

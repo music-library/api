@@ -23,12 +23,12 @@ type IndexTrack struct {
 // Tracks as array
 // Object with key as track id, value as arr index
 type Index struct {
-	Name      string
-	Tracks    []*IndexTrack
-	TracksKey map[string]int
-	Albums    map[string][]string // albums[id_album] = []TracksKey
-	Decades   []string
-	Genres    []string
+	Name      string              `json:"name"`
+	Tracks    []*IndexTrack       `json:"tracks"`
+	TracksKey map[string]int      `json:"tracks_key"`
+	Albums    map[string][]string `json:"albums"` // albums[id_album] = []TracksKey
+	Decades   []string            `json:"decades"`
+	Genres    []string            `json:"genres"`
 }
 
 func GetNewIndex(name string) Index {

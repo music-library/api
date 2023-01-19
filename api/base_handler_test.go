@@ -29,6 +29,8 @@ func TestBaseHandler(t *testing.T) {
 				"message": "Hello, World 👋!",
 				"version": version.Version,
 				"routes": []string{
+					"/",
+					"/main",
 					"/tracks",
 					"/track/:id",
 					"/track/:id/audio",

@@ -7,6 +7,8 @@ import (
 func ApiRoutes(router fiber.Router) {
 	router.All("/", BaseHandler)
 
+	router.Get("/main", MainHandler)
+
 	// Track
 	router.Get("/tracks", TracksHandler)
 	router.Get("/tracks/search/:query", SearchHandler)
