@@ -109,6 +109,17 @@ func main() {
 		genresKeys := make(map[string]bool)
 
 		for index, track := range global.Index.Tracks {
+			// ngram index
+			global.Ngram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
+
+			// albums
+			_, ok := global.Index.Albums[track.IdAlbum]
+			if !ok {
+				global.Index.Albums[track.IdAlbum] = make([]string, 10)
+			}
+			global.Index.Albums[track.IdAlbum] = append(global.Index.Albums[track.IdAlbum], track.Id)
+
+			// decades
 			if _, ok := decadeKeys[track.Metadata.Decade]; !ok {
 				decade := track.Metadata.Decade
 				decadeKeys[decade] = true
@@ -118,6 +129,7 @@ func main() {
 				}
 			}
 
+			// genres
 			if _, ok := genresKeys[track.Metadata.Genre]; !ok {
 				genre := track.Metadata.Genre
 				genresKeys[genre] = true
@@ -126,9 +138,6 @@ func main() {
 					global.Index.Genres = append(global.Index.Genres, genre)
 				}
 			}
-
-			// Add to ngram index
-			global.Ngram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
 		}
 
 		sort.Slice(global.Index.Decades, func(i, j int) bool {

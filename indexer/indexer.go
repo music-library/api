@@ -36,6 +36,7 @@ func GetNewIndex(name string) Index {
 		Name:      name,
 		Tracks:    make([]*IndexTrack, 0, 5000),
 		TracksKey: make(map[string]int, 5000),
+		Albums:    make(map[string][]string, 500),
 	}
 }
 
@@ -85,14 +86,16 @@ func (index *Index) Populate(path string) {
 
 // Populate IndexTrack with actual metadata
 func (index *Index) PopulateFileMetadata(indexTrack *IndexTrack) *IndexTrack {
-	if index.Tracks[index.TracksKey[indexTrack.Id]].Metadata.Title == "(unknown)" {
+	trackIndex := index.TracksKey[indexTrack.Id]
+
+	if index.Tracks[trackIndex].Metadata.Title == "(unknown)" {
 		metadata := GetTrackMetadata(indexTrack.Path)
-		index.Tracks[index.TracksKey[indexTrack.Id]].Metadata = metadata
+		index.Tracks[trackIndex].Metadata = metadata
 	}
 
-	index.Tracks[index.TracksKey[indexTrack.Id]].IdAlbum = HashString(index.Tracks[index.TracksKey[indexTrack.Id]].Metadata.Album + index.Tracks[index.TracksKey[indexTrack.Id]].Metadata.AlbumArtist)
+	index.Tracks[trackIndex].IdAlbum = HashString(index.Tracks[trackIndex].Metadata.Album + index.Tracks[trackIndex].Metadata.AlbumArtist)
 
-	return index.Tracks[index.TracksKey[indexTrack.Id]]
+	return index.Tracks[trackIndex]
 }
 
 // Crawl each file in the index
