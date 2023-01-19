@@ -21,7 +21,7 @@ func ApiRoutes(router fiber.Router) {
 	router.Get("/tracks/:id/cover/:size?", TrackCoverHandler)
 
 	// Album
-	router.Get("/albums", BaseHandler)
+	router.Get("/albums", AlbumsHandler)
 
 	// Health
 	router.Get("/health", HealthHandler)

@@ -115,7 +115,7 @@ func main() {
 			// albums
 			_, ok := global.Index.Albums[track.IdAlbum]
 			if !ok {
-				global.Index.Albums[track.IdAlbum] = make([]string, 10)
+				global.Index.Albums[track.IdAlbum] = make([]string, 0, 20)
 			}
 			global.Index.Albums[track.IdAlbum] = append(global.Index.Albums[track.IdAlbum], track.Id)
 
