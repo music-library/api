@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"sort"
 	"sync"
 	"time"
 
@@ -105,9 +106,11 @@ func main() {
 
 		// Second sync pass
 		decadeKeys := make(map[string]bool)
+		genresKeys := make(map[string]bool)
+
 		for index, track := range global.Index.Tracks {
-			decade := track.Metadata.Decade
-			if _, ok := decadeKeys[decade]; !ok {
+			if _, ok := decadeKeys[track.Metadata.Decade]; !ok {
+				decade := track.Metadata.Decade
 				decadeKeys[decade] = true
 
 				if len(decade) == 4 {
@@ -115,9 +118,26 @@ func main() {
 				}
 			}
 
+			if _, ok := genresKeys[track.Metadata.Genre]; !ok {
+				genre := track.Metadata.Genre
+				genresKeys[genre] = true
+
+				if len(genre) > 0 {
+					global.Index.Genres = append(global.Index.Genres, genre)
+				}
+			}
+
 			// Add to ngram index
 			global.Ngram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
 		}
+
+		sort.Slice(global.Index.Decades, func(i, j int) bool {
+			return global.Index.Decades[i] < global.Index.Decades[j]
+		})
+
+		sort.Slice(global.Index.Genres, func(i, j int) bool {
+			return global.Index.Genres[i] < global.Index.Genres[j]
+		})
 
 		log.Info("main/metadata took ", time.Since(start))
 
