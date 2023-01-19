@@ -14,14 +14,6 @@ import (
 func SearchHandler(c *fiber.Ctx) error {
 	c.Response().Header.Add("Content-Type", "application/json")
 
-	//
-	// New behavior (returns object instead of array)
-	//
-	// tracksJSON, err := sonic.Marshal(global.Index.Tracks)
-
-	//
-	// Legacy behavior
-	//
 	indexValues := global.Ngram.Search(strings.ToLower(c.Params("query")))
 	tracksArr := make([]*indexer.IndexTrack, 0, len(indexValues))
 

@@ -14,14 +14,13 @@ func TrackHandler(c *fiber.Ctx) error {
 	c.Response().Header.Add("Content-Type", "application/json")
 
 	trackId := strings.ToLower(c.Params("id"))
-	trackIndex, ok := global.Index.TracksKey[trackId]
+	track, ok := global.Index.Get(trackId)
 
 	if !ok {
 		log.Error("http/track/" + trackId + " track does not exist")
 		return Error(c, 404, "track does not exist")
 	}
 
-	track := global.Index.Tracks[trackIndex]
 	trackJSON, err := sonic.Marshal(track)
 
 	if err != nil {

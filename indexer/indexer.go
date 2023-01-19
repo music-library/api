@@ -39,6 +39,17 @@ func GetNewIndex(name string) Index {
 	}
 }
 
+// Safely get track from index
+func (index *Index) Get(trackId string) (*IndexTrack, bool) {
+	trackIndex, ok := index.TracksKey[trackId]
+
+	if !ok || trackIndex >= len(index.Tracks) {
+		return nil, false
+	}
+
+	return index.Tracks[trackIndex], true
+}
+
 // Populate File index with audio `IndexTrack` objects
 func (index *Index) Populate(path string) {
 	start := time.Now()
