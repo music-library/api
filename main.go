@@ -80,9 +80,10 @@ func main() {
 				defer await.Done()
 
 				// Check if track metadata is cached
-				cachedTrack, isCached := indexCache.Tracks[indexTrack.Id]
+				cachedTrackIndex, isCached := indexCache.TracksKey[indexTrack.Id]
 
 				if isCached {
+					cachedTrack := indexCache.Tracks[cachedTrackIndex]
 					indexTrack.IdAlbum = cachedTrack.IdAlbum
 					indexTrack.Metadata = cachedTrack.Metadata
 					indexTrack.Stats = cachedTrack.Stats

@@ -8,19 +8,23 @@ import (
 
 func TestGenerateIndex(count uint64) *Index {
 	index := Index{
-		Tracks:      make(map[string]*IndexTrack, count),
-		TracksCount: count,
+		Name:      "test",
+		Tracks:    make([]*IndexTrack, 0, count),
+		TracksKey: make(map[string]int, count),
 	}
 
 	for i := 0; i < int(count); i++ {
 		metadata := TestGenerateMetadata()
 		itemPath := fake.Characters()
 		itemId := HashString(itemPath)
-		index.Tracks[itemId] = &IndexTrack{
+
+		index.TracksKey[itemId] = len(index.Tracks)
+		index.Tracks = append(index.Tracks, &IndexTrack{
 			Id:       itemId,
 			Path:     itemPath,
 			Metadata: metadata,
-		}
+			Stats:    GetEmptyStat(),
+		})
 	}
 
 	return &index

@@ -23,11 +23,20 @@ type IndexTrack struct {
 // Tracks as array
 // Object with key as track id, value as arr index
 type Index struct {
-	Tracks      map[string]*IndexTrack
-	TracksCount uint64
+	Name      string
+	Tracks    []*IndexTrack
+	TracksKey map[string]int
 	// Albums [][]string // Slice of IndexTrack.Id
 	// Genres []string
 	// Decades []string
+}
+
+func GetNewIndex(name string) Index {
+	return Index{
+		Name:      name,
+		Tracks:    make([]*IndexTrack, 0, 5000),
+		TracksKey: make(map[string]int, 5000),
+	}
 }
 
 // Populate File index with audio `IndexTrack` objects
@@ -44,13 +53,13 @@ func (index *Index) Populate(path string) {
 		if !entry.IsDir() && IsFileAudio(itemPath) {
 			itemId := HashString(itemPath)
 
-			index.TracksCount += 1
-			index.Tracks[itemId] = &IndexTrack{
+			index.TracksKey[itemId] = len(index.Tracks)
+			index.Tracks = append(index.Tracks, &IndexTrack{
 				Id:       itemId,
 				Path:     itemPath,
 				Metadata: GetEmptyMetadata(),
 				Stats:    GetEmptyStat(),
-			}
+			})
 		}
 
 		return nil
@@ -65,14 +74,14 @@ func (index *Index) Populate(path string) {
 
 // Populate IndexTrack with actual metadata
 func (index *Index) PopulateFileMetadata(indexTrack *IndexTrack) *IndexTrack {
-	if index.Tracks[indexTrack.Id].Metadata.Title == "(unknown)" {
+	if index.Tracks[index.TracksKey[indexTrack.Id]].Metadata.Title == "(unknown)" {
 		metadata := GetTrackMetadata(indexTrack.Path)
-		index.Tracks[indexTrack.Id].Metadata = metadata
+		index.Tracks[index.TracksKey[indexTrack.Id]].Metadata = metadata
 	}
 
-	index.Tracks[indexTrack.Id].IdAlbum = HashString(index.Tracks[indexTrack.Id].Metadata.Album + index.Tracks[indexTrack.Id].Metadata.AlbumArtist)
+	index.Tracks[index.TracksKey[indexTrack.Id]].IdAlbum = HashString(index.Tracks[index.TracksKey[indexTrack.Id]].Metadata.Album + index.Tracks[index.TracksKey[indexTrack.Id]].Metadata.AlbumArtist)
 
-	return index.Tracks[indexTrack.Id]
+	return index.Tracks[index.TracksKey[indexTrack.Id]]
 }
 
 // Crawl each file in the index

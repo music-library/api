@@ -17,13 +17,14 @@ import (
 
 func TrackAudioHandler(c *fiber.Ctx) error {
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := global.Index.Tracks[trackId]
+	trackIndex, ok := global.Index.TracksKey[trackId]
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/audio track does not exist")
 		return Error(c, 404, "track does not exist")
 	}
 
+	track := global.Index.Tracks[trackIndex]
 	trackFileInfo, err := os.Stat(track.Path)
 
 	if err != nil {
