@@ -66,17 +66,14 @@ func main() {
 		// Read metadata from cache
 		indexCache := global.Cache.ReadAndParseMetadata()
 
-		counter := 0
 		start := time.Now()
 		var await sync.WaitGroup
-		mapMutex := sync.RWMutex{}
 
 		// Populate metadata
 		for _, indexTrack := range global.Index.Tracks {
 			await.Add(1)
-			counter++
 
-			go (func(indexTrack *indexer.IndexTrack, counter int) {
+			go (func(indexTrack *indexer.IndexTrack) {
 				defer await.Done()
 
 				// Check if track metadata is cached
@@ -91,11 +88,6 @@ func main() {
 					global.Index.PopulateFileMetadata(indexTrack)
 				}
 
-				// Add to ngram index
-				mapMutex.Lock()
-				global.Ngram.Add(indexer.GetTrackNgramString(indexTrack), ngram.NewIndexValue(counter, indexTrack))
-				mapMutex.Unlock()
-
 				// Cover
 				if !global.Cache.Exists(indexTrack.IdAlbum + "/cover.jpg") {
 					trackCover, _ := indexer.GetTrackCover(indexTrack.Path)
@@ -106,10 +98,27 @@ func main() {
 						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600")
 					}
 				}
-			})(indexTrack, counter)
+			})(indexTrack)
 		}
 
 		await.Wait()
+
+		// Second sync pass
+		decadeKeys := make(map[string]bool)
+		for index, track := range global.Index.Tracks {
+			decade := track.Metadata.Decade
+			if _, ok := decadeKeys[decade]; !ok {
+				decadeKeys[decade] = true
+
+				if len(decade) == 4 {
+					global.Index.Decades = append(global.Index.Decades, decade)
+				}
+			}
+
+			// Add to ngram index
+			global.Ngram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
+		}
+
 		log.Info("main/metadata took ", time.Since(start))
 
 		// Cache metadata

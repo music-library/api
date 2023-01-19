@@ -26,9 +26,9 @@ type Index struct {
 	Name      string
 	Tracks    []*IndexTrack
 	TracksKey map[string]int
-	// Albums [][]string // Slice of IndexTrack.Id
-	// Genres []string
-	// Decades []string
+	Albums    map[string][]string // albums[id_album] = []TracksKey
+	Decades   []string
+	Genres    []string
 }
 
 func GetNewIndex(name string) Index {
