@@ -13,14 +13,17 @@ lint: fmt
 vet: fmt
 	go vet ./...
 
-bootstrap:
-	go mod download
-	go get github.com/cosmtrek/air
+bootstrap_ci:
+# go mod download
 	go get github.com/mitchellh/gox
 	go get gotest.tools/gotestsum
-	go install github.com/cosmtrek/air
 	go install github.com/mitchellh/gox
 	go install gotest.tools/gotestsum
+	go generate -tags tools tools/tools.go
+
+bootstrap: bootstrap_ci
+	go get github.com/cosmtrek/air
+	go install github.com/cosmtrek/air
 	go generate -tags tools tools/tools.go
 
 #
@@ -32,10 +35,10 @@ run:
 
 test:
 	go clean -testcache
-	gotestsum --format pkgname -- --cover ./...
+	gotestsum --format pkgname -- --cover -mod vendor ./...
 
 bench:
-	go test --cover -bench . -benchmem ./...
+	go test --cover -mod vendor -bench . -benchmem ./...
 
 #
 # Build

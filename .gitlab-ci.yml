@@ -10,8 +10,7 @@ build:
     stage: test
     before_script:
         - apk add --update make gcc libc-dev
-        - make bootstrap
-        - go mod download
+        - make bootstrap_ci
     script:
         - make build
         - ls -R bin
@@ -20,7 +19,6 @@ test:
     stage: test
     before_script:
         - apk add --update make gcc libc-dev
-        - make bootstrap
-        - go mod download
+        - make bootstrap_ci
     script:
         - make test
