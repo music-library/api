@@ -42,10 +42,10 @@ bench:
 #
 
 buildq:
-	go build -ldflags "-s -w" .
+	go build -ldflags "-s -w" -mod vendor .
 
 builddev:
-	go build -ldflags "-s -w" -tags "music-api-dev" -o "bin/music-api-dev.exe" .
+	go build -ldflags "-s -w" -mod vendor -tags "music-api-dev" -o "bin/music-api-dev.exe" .
 
 builddocker:
 	docker stop music-api
