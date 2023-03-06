@@ -13,11 +13,6 @@ func ApiRoutes(router fiber.Router) {
 	router.Get("/tracks", TracksHandler)
 	router.Get("/tracks/search/:query", SearchHandler)
 
-	router.Get("/track/:id", TrackHandler)
-	router.Get("/track/:id/audio", TrackAudioHandler)
-	router.Get("/track/:id/cover/:size?", TrackCoverHandler)
-
-	// LEGACY
 	router.Get("/tracks/:id", TrackHandler)
 	router.Get("/tracks/:id/audio", TrackAudioHandler)
 	router.Get("/tracks/:id/cover/:size?", TrackCoverHandler)
