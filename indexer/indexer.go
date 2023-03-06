@@ -23,12 +23,12 @@ type IndexTrack struct {
 // Tracks as array
 // Object with key as track id, value as arr index
 type Index struct {
-	Name      string           `json:"name"`
-	Tracks    []*IndexTrack    `json:"tracks"`
-	TracksKey map[string]int   `json:"tracks_map"`
-	Albums    map[string][]int `json:"albums"` // albums[id_album] = []TracksKey
-	Decades   []string         `json:"decades"`
-	Genres    []string         `json:"genres"`
+	Name      string              `json:"name"`
+	Tracks    []*IndexTrack       `json:"tracks"`
+	TracksKey map[string]int      `json:"tracks_map"`
+	Albums    map[string][]string `json:"albums"` // albums[id_album] = []TracksKey
+	Decades   []string            `json:"decades"`
+	Genres    []string            `json:"genres"`
 }
 
 func GetNewIndex(name string) Index {
@@ -36,7 +36,7 @@ func GetNewIndex(name string) Index {
 		Name:      name,
 		Tracks:    make([]*IndexTrack, 0, 5000),
 		TracksKey: make(map[string]int, 5000),
-		Albums:    make(map[string][]int, 500),
+		Albums:    make(map[string][]string, 500),
 	}
 }
 
