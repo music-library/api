@@ -115,9 +115,9 @@ func main() {
 			// albums
 			_, ok := global.Index.Albums[track.IdAlbum]
 			if !ok {
-				global.Index.Albums[track.IdAlbum] = make([]string, 0, 20)
+				global.Index.Albums[track.IdAlbum] = make([]int, 0, 20)
 			}
-			global.Index.Albums[track.IdAlbum] = append(global.Index.Albums[track.IdAlbum], track.Id)
+			global.Index.Albums[track.IdAlbum] = append(global.Index.Albums[track.IdAlbum], index)
 
 			// decades
 			if _, ok := decadeKeys[track.Metadata.Decade]; !ok {
