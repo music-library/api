@@ -17,9 +17,6 @@ func ApiRoutes(router fiber.Router) {
 	router.Get("/tracks/:id/audio", TrackAudioHandler)
 	router.Get("/tracks/:id/cover/:size?", TrackCoverHandler)
 
-	// Album
-	router.Get("/albums", AlbumsHandler)
-
 	// Health
 	router.Get("/health", HealthHandler)
 	router.Get("/health/metrics", HealthHandler) // Prometheus style metrics?

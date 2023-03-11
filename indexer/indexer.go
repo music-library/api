@@ -12,17 +12,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type IndexTrack struct {
-	Id       string    `json:"id"`
-	IdAlbum  string    `json:"id_album"`
-	Path     string    `json:"path"`
-	Metadata *Metadata `json:"metadata"`
-	Stats    *Stat     `json:"stats"`
+// TODO: Implement this
+type IndexMany struct {
+	Indexes []*Index
 }
 
 // Tracks as array
 // Object with key as track id, value as arr index
 type Index struct {
+	Id        string              `json:"id"`
 	Name      string              `json:"name"`
 	Tracks    []*IndexTrack       `json:"tracks"`
 	TracksKey map[string]int      `json:"tracks_map"`
@@ -31,8 +29,17 @@ type Index struct {
 	Genres    []string            `json:"genres"`
 }
 
+type IndexTrack struct {
+	Id       string    `json:"id"`
+	IdAlbum  string    `json:"id_album"`
+	Path     string    `json:"path"`
+	Metadata *Metadata `json:"metadata"`
+	Stats    *Stat     `json:"stats"`
+}
+
 func GetNewIndex(name string) Index {
 	return Index{
+		Id:        HashString(name),
 		Name:      name,
 		Tracks:    make([]*IndexTrack, 0, 5000),
 		TracksKey: make(map[string]int, 5000),

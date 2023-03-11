@@ -10,10 +10,6 @@ func MainHandler(c *fiber.Ctx) error {
 	return c.JSON(global.Index)
 }
 
-func AlbumsHandler(c *fiber.Ctx) error {
-	return c.JSON(global.Index.Albums)
-}
-
 func TracksHandler(c *fiber.Ctx) error {
 	return c.JSON(global.Index.Tracks)
 }
