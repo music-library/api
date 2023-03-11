@@ -13,6 +13,7 @@ API for the Music-Library project, written in Go.
 -   [x] `/track/:id/cover/:size?`
 -   [x] Extract metadata
 -   [x] Cache metadata
+-   [ ] Re-index library every X hours
 
 ### Additional
 
