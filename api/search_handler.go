@@ -11,10 +11,10 @@ import (
 
 func SearchHandler(c *fiber.Ctx) error {
 	indexValues := global.Ngram.Search(strings.ToLower(c.Params("query")))
-	tracksArr := make([]*indexer.IndexTrack, 0, len(indexValues))
+	tracksArr := make([]string, 0, len(indexValues))
 
 	for _, track := range indexValues {
-		tracksArr = append(tracksArr, track.Data.(*indexer.IndexTrack))
+		tracksArr = append(tracksArr, track.Data.(*indexer.IndexTrack).Id)
 	}
 
 	return c.JSON(tracksArr)
