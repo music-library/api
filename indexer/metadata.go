@@ -8,8 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/dhowden/tag"
 	log "github.com/sirupsen/logrus"
+	useCache "gitlab.com/music-library/music-api/cache"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -162,7 +164,7 @@ func GetTrackCover(filePath string) ([]byte, string) {
 }
 
 func ResizeTrackCover(idAlbum string, size string) (string, error) {
-	cache := GetCache()
+	cache := useCache.GetCache()
 
 	imgPath := fmt.Sprintf("%s/cover.jpg", idAlbum)
 	imgResizePath := fmt.Sprintf("%s/%s.jpg", idAlbum, size)
@@ -177,4 +179,20 @@ func ResizeTrackCover(idAlbum string, size string) (string, error) {
 	}
 
 	return imgResizePath, nil
+}
+
+func ReadAndParseMetadata() *Index {
+	cache := useCache.GetCache()
+	metadataRaw, err := cache.Read("metadata.json")
+	indexCache := &Index{}
+
+	if err != nil {
+		log.Error("cache/parse/metadata failed to read cache file metadata.json")
+	}
+
+	if err == nil {
+		sonic.Unmarshal(metadataRaw, indexCache)
+	}
+
+	return indexCache
 }

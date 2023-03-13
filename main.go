@@ -13,6 +13,7 @@ import (
 	"github.com/hmerritt/go-ngram"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
+	useCache "gitlab.com/music-library/music-api/cache"
 	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
@@ -66,8 +67,8 @@ func main() {
 		global.Index.Populate(config.Config.MusicDir)
 
 		// Read metadata from cache
-		cache := indexer.GetCache()
-		indexCache := cache.ReadAndParseMetadata()
+		cache := useCache.GetCache()
+		indexCache := indexer.ReadAndParseMetadata()
 
 		start := time.Now()
 		var await sync.WaitGroup

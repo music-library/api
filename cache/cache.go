@@ -1,10 +1,9 @@
-package indexer
+package cache
 
 import (
 	"os"
 	"path/filepath"
 
-	"github.com/bytedance/sonic"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/config"
 )
@@ -78,19 +77,4 @@ func (cache *Cache) Add(path string, fileName string, data []byte) error {
 	}
 
 	return nil
-}
-
-func (cache *Cache) ReadAndParseMetadata() *Index {
-	metadataRaw, err := cache.Read("metadata.json")
-	indexCache := &Index{}
-
-	if err != nil {
-		log.Error("cache/parse/metadata failed to read cache file metadata.json")
-	}
-
-	if err == nil {
-		sonic.Unmarshal(metadataRaw, indexCache)
-	}
-
-	return indexCache
 }

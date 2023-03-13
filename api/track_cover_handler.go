@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
+	useCache "gitlab.com/music-library/music-api/cache"
 	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 	"gitlab.com/music-library/music-api/static"
@@ -16,7 +17,7 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := global.Index.Get(trackId)
-	cache := indexer.GetCache()
+	cache := useCache.GetCache()
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/cover track does not exist")
