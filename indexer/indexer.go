@@ -14,7 +14,10 @@ import (
 
 // TODO: Implement this
 type IndexMany struct {
-	Indexes []*Index
+	// Default (fallback) `Indexes` map key.
+	DefaultKey string
+	// Store multiple indexes. An index is the meta needed for an entire music library.
+	Indexes map[string]*Index
 }
 
 // Tracks as array
