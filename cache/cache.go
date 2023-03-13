@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -12,9 +13,9 @@ type Cache struct {
 	Path string
 }
 
-func GetCache() Cache {
+func GetCache(subDir string) Cache {
 	return Cache{
-		Path: config.Config.DataDir,
+		Path: fmt.Sprintf("%s/%s", config.Config.DataDir, subDir),
 	}
 }
 

@@ -67,7 +67,7 @@ func main() {
 		global.Index.Populate(config.Config.MusicDir)
 
 		// Read metadata from cache
-		cache := useCache.GetCache()
+		cache := useCache.GetCache(".")
 		indexCache := indexer.ReadAndParseMetadata()
 
 		start := time.Now()

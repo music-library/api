@@ -11,6 +11,8 @@ import (
 
 	"github.com/gosimple/slug"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // TODO: Implement this
@@ -44,7 +46,7 @@ type IndexTrack struct {
 func GetNewIndex(name string) Index {
 	return Index{
 		Id:        slug.Make(name),
-		Name:      name,
+		Name:      cases.Title(language.AmericanEnglish).String(strings.ToLower(name)),
 		Tracks:    make([]*IndexTrack, 0, 5000),
 		TracksKey: make(map[string]int, 5000),
 		Albums:    make(map[string][]string, 500),
