@@ -10,6 +10,7 @@ import (
 
 	"github.com/dhowden/tag"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/music-library/music-api/config"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -162,9 +163,11 @@ func GetTrackCover(filePath string) ([]byte, string) {
 }
 
 func ResizeTrackCover(idAlbum string, size string) (string, error) {
+	// @TODO: Replace this with global cache instance
 	cache := Cache{
-		Path: "./data",
+		Path: config.Config.DataDir,
 	}
+
 	imgPath := fmt.Sprintf("%s/cover.jpg", idAlbum)
 	imgResizePath := fmt.Sprintf("%s/%s.jpg", idAlbum, size)
 

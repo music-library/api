@@ -13,6 +13,7 @@ import (
 	"github.com/hmerritt/go-ngram"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
+	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 	"gitlab.com/music-library/music-api/version"
@@ -25,16 +26,16 @@ import (
 
 func init() {
 	// Create data directory
-	if _, err := os.Stat(global.DATA_DIR); os.IsNotExist(err) {
-		os.Mkdir(global.DATA_DIR, 0755)
+	if _, err := os.Stat(config.Config.DataDir); os.IsNotExist(err) {
+		os.Mkdir(config.Config.DataDir, 0755)
 	}
 
 	// Create music directory
-	if _, err := os.Stat(global.MUSIC_DIR); os.IsNotExist(err) {
-		os.Mkdir(global.MUSIC_DIR, 0755)
+	if _, err := os.Stat(config.Config.MusicDir); os.IsNotExist(err) {
+		os.Mkdir(config.Config.MusicDir, 0755)
 	}
 
-	MakeLogger(global.LOG_FILE)
+	MakeLogger(config.Config.LogFile)
 }
 
 func main() {
@@ -52,7 +53,7 @@ func main() {
 	// Middleware
 	app.Use(recover.New()) // Prevent crashes due to panics
 
-	if global.LOG_LEVEL == "debug" {
+	if config.Config.LogLevel == "debug" {
 		app.Use(logger.New())
 	}
 
@@ -62,7 +63,7 @@ func main() {
 	// Async index population (to prevent blocking the server)
 	go (func() {
 		// Populate the index
-		global.Index.Populate(global.MUSIC_DIR)
+		global.Index.Populate(config.Config.MusicDir)
 
 		// Read metadata from cache
 		indexCache := global.Cache.ReadAndParseMetadata()
