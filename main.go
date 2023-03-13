@@ -110,7 +110,7 @@ func main() {
 
 		for index, track := range global.Index.Tracks {
 			// ngram index
-			global.Ngram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
+			global.IndexNgram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
 
 			// albums
 			_, ok := global.Index.Albums[track.IdAlbum]

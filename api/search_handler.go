@@ -10,7 +10,7 @@ import (
 )
 
 func SearchHandler(c *fiber.Ctx) error {
-	indexValues := global.Ngram.Search(strings.ToLower(c.Params("query")))
+	indexValues := global.IndexNgram.Search(strings.ToLower(c.Params("query")))
 	tracksArr := make([]string, 0, len(indexValues))
 
 	for _, track := range indexValues {

@@ -12,7 +12,7 @@ var Cache = indexer.Cache{
 }
 
 // Initialize the ngrams
-var Ngram = ngram.NgramIndex{
+var IndexNgram = ngram.NgramIndex{
 	NgramMap:   make(map[string]map[int]*ngram.IndexValue),
 	IndexesMap: make(map[int]*ngram.IndexValue),
 	Ngram:      3,
