@@ -17,7 +17,7 @@ func TestBaseHandler(t *testing.T) {
 		route              string
 		method             string // HTTP method
 		expectedStatusCode int    // Expected HTTP status code
-		res                fiber.Map
+		res                BaseRes
 	}{
 		// Add test cases here
 		{
@@ -25,17 +25,17 @@ func TestBaseHandler(t *testing.T) {
 			route:              "/",
 			method:             "GET",
 			expectedStatusCode: 200,
-			res: fiber.Map{
-				"message": "Hello, World 👋!",
-				"version": version.Version,
-				"routes": []string{
+			res: BaseRes{
+				Message: "Hello, World 👋!",
+				Version: version.Version,
+				Uptime:  "0s",
+				Routes: []string{
 					"/",
 					"/main",
 					"/tracks",
 					"/track/:id",
 					"/track/:id/audio",
 					"/track/:id/cover/:size?",
-					"/albums",
 					"/health",
 					"/health/metrics",
 				},
@@ -63,8 +63,12 @@ func TestBaseHandler(t *testing.T) {
 		// (set to -1 for no latency)
 		resp, _ := app.Test(req, -1)
 
-		res, _ := json.Marshal(test.res)
 		body, _ := io.ReadAll(resp.Body)
+		bodyParsed := BaseRes{}
+		json.Unmarshal(body, &bodyParsed)
+
+		test.res.Uptime = bodyParsed.Uptime
+		res, _ := json.Marshal(test.res)
 
 		// Verify, if the status code is as expected
 		assert.Equalf(t, test.expectedStatusCode, resp.StatusCode, test.description)
