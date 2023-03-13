@@ -66,7 +66,8 @@ func main() {
 		global.Index.Populate(config.Config.MusicDir)
 
 		// Read metadata from cache
-		indexCache := global.Cache.ReadAndParseMetadata()
+		cache := indexer.GetCache()
+		indexCache := cache.ReadAndParseMetadata()
 
 		start := time.Now()
 		var await sync.WaitGroup
@@ -91,12 +92,12 @@ func main() {
 				}
 
 				// Cover
-				if !global.Cache.Exists(indexTrack.IdAlbum + "/cover.jpg") {
+				if !cache.Exists(indexTrack.IdAlbum + "/cover.jpg") {
 					trackCover, _ := indexer.GetTrackCover(indexTrack.Path)
 
 					if trackCover != nil {
 						// Save to global Cache
-						global.Cache.Add(indexTrack.IdAlbum, "cover.jpg", trackCover)
+						cache.Add(indexTrack.IdAlbum, "cover.jpg", trackCover)
 						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600")
 					}
 				}
@@ -158,7 +159,7 @@ func main() {
 			log.Error("main/metadata/cache failed to marshal metadata ", err)
 		}
 
-		global.Cache.Replace(".", "metadata.json", metadataJSON)
+		cache.Replace(".", "metadata.json", metadataJSON)
 	})()
 
 	// Listen

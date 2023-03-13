@@ -16,6 +16,7 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := global.Index.Get(trackId)
+	cache := indexer.GetCache()
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/cover track does not exist")
@@ -24,17 +25,17 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 
 	imgPath := fmt.Sprintf("%s/cover.jpg", track.IdAlbum)
 
-	if !global.Cache.Exists(imgPath) {
+	if !cache.Exists(imgPath) {
 		log.Error("http/track/" + trackId + "/cover cover does not exist")
 		return c.Send(getDefaultCover())
 	}
 
 	if len(c.Params("size")) > 0 {
 		imgResizePath, _ := indexer.ResizeTrackCover(track.IdAlbum, c.Params("size"))
-		return c.SendFile(global.Cache.FilePath(imgResizePath))
+		return c.SendFile(cache.FilePath(imgResizePath))
 	}
 
-	return c.SendFile(global.Cache.FilePath(imgPath))
+	return c.SendFile(cache.FilePath(imgPath))
 }
 
 func getDefaultCover() []byte {

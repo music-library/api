@@ -6,10 +6,17 @@ import (
 
 	"github.com/bytedance/sonic"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/music-library/music-api/config"
 )
 
 type Cache struct {
 	Path string
+}
+
+func GetCache() Cache {
+	return Cache{
+		Path: config.Config.DataDir,
+	}
 }
 
 func (cache *Cache) FilePath(path string) string {
