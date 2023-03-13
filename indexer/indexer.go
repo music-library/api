@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gosimple/slug"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -42,7 +43,7 @@ type IndexTrack struct {
 
 func GetNewIndex(name string) Index {
 	return Index{
-		Id:        HashString(name),
+		Id:        slug.Make(name),
 		Name:      name,
 		Tracks:    make([]*IndexTrack, 0, 5000),
 		TracksKey: make(map[string]int, 5000),
