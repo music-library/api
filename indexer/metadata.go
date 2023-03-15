@@ -163,9 +163,7 @@ func GetTrackCover(filePath string) ([]byte, string) {
 	return picture.Data, mimeType
 }
 
-func ResizeTrackCover(idAlbum string, size string) (string, error) {
-	cache := useCache.GetCache(".")
-
+func ResizeTrackCover(idAlbum string, size string, cache useCache.Cache) (string, error) {
 	imgPath := fmt.Sprintf("%s/cover.jpg", idAlbum)
 	imgResizePath := fmt.Sprintf("%s/%s.jpg", idAlbum, size)
 
@@ -181,8 +179,7 @@ func ResizeTrackCover(idAlbum string, size string) (string, error) {
 	return imgResizePath, nil
 }
 
-func ReadAndParseMetadata() *Index {
-	cache := useCache.GetCache(".")
+func ReadAndParseMetadata(cache useCache.Cache) *Index {
 	metadataRaw, err := cache.Read("metadata.json")
 	indexCache := &Index{}
 

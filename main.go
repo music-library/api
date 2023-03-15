@@ -68,7 +68,7 @@ func main() {
 
 		// Read metadata from cache
 		cache := useCache.GetCache(".")
-		indexCache := indexer.ReadAndParseMetadata()
+		indexCache := indexer.ReadAndParseMetadata(cache)
 
 		start := time.Now()
 		var await sync.WaitGroup
@@ -99,7 +99,7 @@ func main() {
 					if trackCover != nil {
 						// Save to global Cache
 						cache.Add(indexTrack.IdAlbum, "cover.jpg", trackCover)
-						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600")
+						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600", cache)
 					}
 				}
 			})(indexTrack)

@@ -14,6 +14,12 @@ type Cache struct {
 }
 
 func GetCache(subDir string) Cache {
+	path := fmt.Sprintf("%s/%s", config.Config.DataDir, subDir)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.Mkdir(path, 0755)
+	}
+
 	return Cache{
 		Path: fmt.Sprintf("%s/%s", config.Config.DataDir, subDir),
 	}

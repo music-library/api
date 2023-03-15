@@ -18,7 +18,7 @@ func BootstrapIndex(name, dir string) {
 
 	// Read metadata from cache
 	cache := useCache.GetCache(newIndex.Id)
-	indexCache := ReadAndParseMetadata()
+	indexCache := ReadAndParseMetadata(cache)
 
 	start := time.Now()
 	var await sync.WaitGroup
@@ -49,7 +49,7 @@ func BootstrapIndex(name, dir string) {
 				if trackCover != nil {
 					// Save to global Cache
 					cache.Add(indexTrack.IdAlbum, "cover.jpg", trackCover)
-					ResizeTrackCover(indexTrack.IdAlbum, "600")
+					ResizeTrackCover(indexTrack.IdAlbum, "600", cache)
 				}
 			}
 		})(indexTrack)

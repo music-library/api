@@ -32,7 +32,7 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	}
 
 	if len(c.Params("size")) > 0 {
-		imgResizePath, _ := indexer.ResizeTrackCover(track.IdAlbum, c.Params("size"))
+		imgResizePath, _ := indexer.ResizeTrackCover(track.IdAlbum, c.Params("size"), cache)
 		return c.SendFile(cache.FilePath(imgResizePath))
 	}
 
