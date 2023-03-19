@@ -31,7 +31,7 @@ type Configuration struct {
 type ConfigurationMusicLibrary struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
-	Path string `json:"path"`
+	Path string `json:"-"`
 }
 
 var Config = GetConfig() // Global config

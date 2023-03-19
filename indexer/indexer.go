@@ -40,7 +40,7 @@ type Index struct {
 type IndexTrack struct {
 	Id       string    `json:"id"`
 	IdAlbum  string    `json:"id_album"`
-	Path     string    `json:"path"`
+	Path     string    `json:"-"`
 	Metadata *Metadata `json:"metadata"`
 	Stats    *Stat     `json:"stats"`
 }
