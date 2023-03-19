@@ -10,8 +10,14 @@ import (
 )
 
 func TrackHandler(c *fiber.Ctx) error {
+	libId := c.Params("libId")
+
+	if libId == "" {
+		libId = global.IndexMany.DefaultKey
+	}
+
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := global.Index.Get(trackId)
+	track, ok := global.IndexMany.Indexes[libId].Get(trackId)
 
 	if !ok {
 		log.Error("http/track/" + trackId + " track does not exist")
