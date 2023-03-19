@@ -20,14 +20,10 @@ tasks:
 
     bootstrap:
         cmds:
-            - go get github.com/cosmtrek/air
-            - go get github.com/go-task/task/v3/cmd/task
-            - go get github.com/mitchellh/gox
-            - go get gotest.tools/gotestsum
-            - go install github.com/cosmtrek/air
-            - go install github.com/go-task/task/v3/cmd/task
-            - go install github.com/mitchellh/gox
-            - go install gotest.tools/gotestsum
+            - go install -mod vendor github.com/cosmtrek/air
+            - go install -mod vendor github.com/go-task/task/v3/cmd/task
+            - go install -mod vendor github.com/mitchellh/gox
+            - go install -mod vendor gotest.tools/gotestsum
             - go generate -tags tools tools/tools.go
 
     #
