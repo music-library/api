@@ -5,11 +5,10 @@ stages:
 
 .bootstrap_script:
     before_script:
-        - apk add --update gcc libc-dev
+        - apk add --update gcc libc-dev git
         - go install -mod vendor github.com/go-task/task/v3/cmd/task
         - go generate -tags tools tools/tools.go
         - task bootstrap
-        - apk add git
 
 #
 # Test
