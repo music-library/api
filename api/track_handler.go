@@ -10,12 +10,7 @@ import (
 )
 
 func TrackHandler(c *fiber.Ctx) error {
-	libId := c.Params("libId")
-
-	if libId == "" {
-		libId = global.IndexMany.DefaultKey
-	}
-
+	libId := c.Locals("libId").(string)
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := global.IndexMany.Indexes[libId].Get(trackId)
 

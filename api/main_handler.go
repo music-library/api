@@ -7,21 +7,11 @@ import (
 )
 
 func MainHandler(c *fiber.Ctx) error {
-	libId := c.Params("libId")
-
-	if libId == "" {
-		libId = global.IndexMany.DefaultKey
-	}
-
+	libId := c.Locals("libId").(string)
 	return c.JSON(global.IndexMany.Indexes[libId])
 }
 
 func TracksHandler(c *fiber.Ctx) error {
-	libId := c.Params("libId")
-
-	if libId == "" {
-		libId = global.IndexMany.DefaultKey
-	}
-
+	libId := c.Locals("libId").(string)
 	return c.JSON(global.IndexMany.Indexes[libId].Tracks)
 }

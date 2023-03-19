@@ -15,12 +15,7 @@ import (
 func TrackCoverHandler(c *fiber.Ctx) error {
 	c.Response().Header.Add("Content-Type", "image/jpg")
 
-	libId := c.Params("libId")
-
-	if libId == "" {
-		libId = global.IndexMany.DefaultKey
-	}
-
+	libId := c.Locals("libId").(string)
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := global.IndexMany.Indexes[libId].Get(trackId)
 	cache := useCache.GetCache(".")
