@@ -4,9 +4,10 @@ stages:
     - test
 
 .bootstrap_script:
-    script:
+    before_script:
         - go get github.com/go-task/task/v3/cmd/task
         - go install github.com/go-task/task/v3/cmd/task
+        - go generate -tags tools tools/tools.go
         - task bootstrap
 
 #
