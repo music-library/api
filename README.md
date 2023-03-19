@@ -58,10 +58,21 @@ API for the Music-Library project, written in Go.
 
 ### Setup
 
-```bash
-$ make bootstrap
-```
+Setup by running the following bootstrap commands:
 
 ```bash
-$ make rundev
+$ go install -mod vendor github.com/go-task/task/v3/cmd/task
+$ task bootstrap
+```
+
+Available tasks are in `Taskfile.yml` and use [go-task](https://taskfile.dev/#/installation). To list all available tasks, run:
+
+```bash
+$ task --list-all
+```
+
+Start development server by running:
+
+```bash
+$ task dev
 ```
