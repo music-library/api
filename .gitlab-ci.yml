@@ -9,6 +9,7 @@ stages:
         - go install -mod vendor github.com/go-task/task/v3/cmd/task
         - go generate -tags tools tools/tools.go
         - task bootstrap
+        - apk add git
 
 #
 # Test

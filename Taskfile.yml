@@ -1,5 +1,13 @@
 version: '3'
 
+vars:
+    GIT_BRANCH:
+        sh: git rev-parse --abbrev-ref HEAD
+    GIT_COMMIT:
+        sh: git log -n 1 --format=%h
+    GIT_DIRTY:
+        sh: test -n "`git status --porcelain`" && echo "+CHANGES" || true
+
 tasks:
     #
     # Boring
@@ -48,11 +56,11 @@ tasks:
     #
     buildq:
         cmds:
-            - go build -ldflags "-s -w" -mod vendor .
+            - go build -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -mod vendor .
 
     builddev:
         cmds:
-            - go build -ldflags "-s -w" -mod vendor -tags "music-api-dev" -o "bin/music-api-dev.exe" .
+            - go build -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -mod vendor -tags "music-api-dev" -o "bin/music-api-dev.exe" .
 
     builddocker:
         cmds:
@@ -63,4 +71,4 @@ tasks:
     build:
         deps: [vet]
         cmds:
-            - gox -osarch "linux/amd64" -gocmd go -ldflags "-s -w" -tags "music-api" -output "bin/music-api" .
+            - gox -osarch "linux/amd64" -gocmd go -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -tags "music-api" -output "bin/music-api" .

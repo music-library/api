@@ -7,6 +7,7 @@ import (
 
 // VersionInfo
 type VersionInfo struct {
+	Branch            string
 	Revision          string
 	Version           string
 	VersionPrerelease string
@@ -25,6 +26,7 @@ func GetVersion() *VersionInfo {
 	}
 
 	return &VersionInfo{
+		Branch:            GitBranch,
 		Revision:          GitCommit,
 		Version:           ver,
 		VersionPrerelease: rel,
@@ -58,6 +60,7 @@ func (c *VersionInfo) FullVersionNumber(rev bool) string {
 	}
 
 	fmt.Fprintf(&versionString, "music-api [Version %s", c.Version)
+
 	if c.VersionPrerelease != "" {
 		fmt.Fprintf(&versionString, "-%s", c.VersionPrerelease)
 	}
@@ -67,7 +70,16 @@ func (c *VersionInfo) FullVersionNumber(rev bool) string {
 	}
 
 	if rev && c.Revision != "" {
-		fmt.Fprintf(&versionString, " %s", c.Revision)
+		fmt.Fprintf(&versionString, " %s", "(")
+
+		if c.Branch != "" && c.Branch != "master" && c.Branch != "HEAD" {
+			fmt.Fprintf(&versionString, "%s", c.Branch)
+			fmt.Fprintf(&versionString, "%s", "/")
+		}
+
+		fmt.Fprintf(&versionString, "%s", c.Revision)
+
+		fmt.Fprintf(&versionString, "%s", ")")
 	}
 
 	fmt.Fprintf(&versionString, "]")
