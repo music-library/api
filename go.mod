@@ -12,13 +12,25 @@ require (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
+	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
+	github.com/go-task/task/v3 v3.22.0 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/gosimple/slug v1.13.1 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	github.com/mattn/go-zglob v0.0.4 // indirect
+	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
+	github.com/radovskyb/watcher v1.0.7 // indirect
+	github.com/sajari/fuzzy v1.0.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
+	golang.org/x/exp v0.0.0-20230212135524-a684f29349b6 // indirect
+	mvdan.cc/sh/v3 v3.6.0 // indirect
 )
 
 require (
@@ -28,7 +40,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dhowden/tag v0.0.0-20220618230019-adf36e896086
 	github.com/dnephin/pflag v1.0.7 // indirect
-	github.com/fatih/color v1.13.0 // indirect
+	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/hashicorp/go-version v1.0.0 // indirect
@@ -36,7 +48,7 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mitchellh/iochan v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
@@ -46,9 +58,9 @@ require (
 	github.com/valyala/fasthttp v1.41.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
+	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.5.0
 	golang.org/x/tools v0.2.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
