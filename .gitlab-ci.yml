@@ -8,17 +8,11 @@ stages:
 #
 build:
     stage: test
-    before_script:
-        - apk add --update make gcc libc-dev
-        - make bootstrap_ci
     script:
-        - make build
+        - task build
         - ls -R bin
 
 test:
     stage: test
-    before_script:
-        - apk add --update make gcc libc-dev
-        - make bootstrap_ci
     script:
-        - make test
+        - task test

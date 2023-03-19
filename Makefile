@@ -15,8 +15,10 @@ vet: fmt
 
 bootstrap_ci:
 # go mod download
+	go get github.com/go-task/task/v3/cmd/task
 	go get github.com/mitchellh/gox
 	go get gotest.tools/gotestsum
+	go install github.com/go-task/task/v3/cmd/task
 	go install github.com/mitchellh/gox
 	go install gotest.tools/gotestsum
 	go generate -tags tools tools/tools.go

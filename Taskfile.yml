@@ -1,0 +1,70 @@
+version: '3'
+
+tasks:
+    #
+    # Boring
+    #
+    fmt:
+        cmds:
+            - go fmt ./...
+
+    lint:
+        deps: [fmt]
+        cmds:
+            - golint ./...
+
+    vet:
+        deps: [fmt]
+        cmds:
+            - go vet ./...
+
+    bootstrap:
+        cmds:
+            - go get github.com/cosmtrek/air
+            - go get github.com/go-task/task/v3/cmd/task
+            - go get github.com/mitchellh/gox
+            - go get gotest.tools/gotestsum
+            - go install github.com/cosmtrek/air
+            - go install github.com/go-task/task/v3/cmd/task
+            - go install github.com/mitchellh/gox
+            - go install gotest.tools/gotestsum
+            - go generate -tags tools tools/tools.go
+
+    #
+    # Run, test, & bench
+    #
+    run:
+        aliases: [dev]
+        cmds:
+            - air
+
+    test:
+        cmds:
+            - go clean -testcache
+            - gotestsum --format pkgname -- --cover -mod vendor ./...
+
+    bench:
+        cmds:
+            - go test --cover -mod vendor -bench . -benchmem ./...
+
+    #
+    # Build
+    #
+    buildq:
+        cmds:
+            - go build -ldflags "-s -w" -mod vendor .
+
+    builddev:
+        cmds:
+            - go build -ldflags "-s -w" -mod vendor -tags "music-api-dev" -o "bin/music-api-dev.exe" .
+
+    builddocker:
+        cmds:
+            - docker stop music-api
+            - docker rm music-api
+            - docker build --no-cache -t music-api .
+
+    build:
+        deps: [vet]
+        cmds:
+            - gox -osarch "linux/amd64 windows/amd64" -gocmd go -ldflags "-s -w" -tags "music-api" -output "bin/music-api" .

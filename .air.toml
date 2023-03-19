@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./bin/music-api-dev.exe"
-cmd = "make builddev"
+cmd = "task builddev"
 delay = 800
 exclude_dir = [".git", "assets", "bin", "tmp", "testdata", "vendor"]
 exclude_file = []
