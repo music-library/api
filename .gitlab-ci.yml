@@ -3,16 +3,24 @@ image: golang:1.18.3-alpine
 stages:
     - test
 
+.bootstrap_script:
+    script:
+        - go get github.com/go-task/task/v3/cmd/task
+        - go install github.com/go-task/task/v3/cmd/task
+        - task bootstrap
+
 #
 # Test
 #
 build:
     stage: test
+    extends: .bootstrap_script
     script:
         - task build
         - ls -R bin
 
 test:
     stage: test
+    extends: .bootstrap_script
     script:
         - task test
