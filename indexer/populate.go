@@ -11,7 +11,7 @@ import (
 )
 
 // Async index population (to prevent blocking the server)
-func BootstrapIndex(name, dir string) {
+func BootstrapIndex(name, dir string) *Index {
 	// Populate the index
 	newIndex := GetNewIndex(name)
 	newIndex.Populate(dir)
@@ -111,4 +111,6 @@ func BootstrapIndex(name, dir string) {
 	}
 
 	cache.Replace(".", "metadata.json", metadataJSON)
+
+	return &newIndex
 }

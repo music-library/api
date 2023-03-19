@@ -2,18 +2,13 @@ package main
 
 import (
 	"os"
-	"sort"
-	"sync"
-	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/hmerritt/go-ngram"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
-	useCache "gitlab.com/music-library/music-api/cache"
 	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
@@ -63,104 +58,11 @@ func main() {
 
 	// Async index population (to prevent blocking the server)
 	go (func() {
-		// Populate the index
-		global.Index.Populate(config.Config.MusicDir)
-
-		// Read metadata from cache
-		cache := useCache.GetCache(".")
-		indexCache := indexer.ReadAndParseMetadata(cache)
-
-		start := time.Now()
-		var await sync.WaitGroup
-
-		// Populate metadata
-		for _, indexTrack := range global.Index.Tracks {
-			await.Add(1)
-
-			go (func(indexTrack *indexer.IndexTrack) {
-				defer await.Done()
-
-				// Check if track metadata is cached
-				cachedTrackIndex, isCached := indexCache.TracksKey[indexTrack.Id]
-
-				if isCached {
-					cachedTrack := indexCache.Tracks[cachedTrackIndex]
-					indexTrack.IdAlbum = cachedTrack.IdAlbum
-					indexTrack.Metadata = cachedTrack.Metadata
-					indexTrack.Stats = cachedTrack.Stats
-				} else {
-					global.Index.PopulateFileMetadata(indexTrack)
-				}
-
-				// Cover
-				if !cache.Exists(indexTrack.IdAlbum + "/cover.jpg") {
-					trackCover, _ := indexer.GetTrackCover(indexTrack.Path)
-
-					if trackCover != nil {
-						// Save to global Cache
-						cache.Add(indexTrack.IdAlbum, "cover.jpg", trackCover)
-						indexer.ResizeTrackCover(indexTrack.IdAlbum, "600", cache)
-					}
-				}
-			})(indexTrack)
+		// Index all music libraries
+		for _, musicLibConfig := range config.Config.MusicLibraries {
+			mainIndex := indexer.BootstrapIndex(musicLibConfig.Name, musicLibConfig.Path)
+			global.IndexMany.Indexes[mainIndex.Id] = mainIndex
 		}
-
-		await.Wait()
-
-		// Second sync pass
-		decadeKeys := make(map[string]bool)
-		genresKeys := make(map[string]bool)
-
-		for index, track := range global.Index.Tracks {
-			// ngram index
-			global.IndexNgram.Add(indexer.GetTrackNgramString(track), ngram.NewIndexValue(index, track))
-
-			// albums
-			_, ok := global.Index.Albums[track.IdAlbum]
-			if !ok {
-				global.Index.Albums[track.IdAlbum] = make([]string, 0, 20)
-			}
-			global.Index.Albums[track.IdAlbum] = append(global.Index.Albums[track.IdAlbum], track.Id)
-
-			// decades
-			if _, ok := decadeKeys[track.Metadata.Decade]; !ok {
-				decade := track.Metadata.Decade
-				decadeKeys[decade] = true
-
-				if len(decade) == 4 {
-					global.Index.Decades = append(global.Index.Decades, decade)
-				}
-			}
-
-			// genres
-			if _, ok := genresKeys[track.Metadata.Genre]; !ok {
-				genre := track.Metadata.Genre
-				genresKeys[genre] = true
-
-				if len(genre) > 0 {
-					global.Index.Genres = append(global.Index.Genres, genre)
-				}
-			}
-		}
-
-		sort.Slice(global.Index.Decades, func(i, j int) bool {
-			return global.Index.Decades[i] < global.Index.Decades[j]
-		})
-
-		sort.Slice(global.Index.Genres, func(i, j int) bool {
-			return global.Index.Genres[i] < global.Index.Genres[j]
-		})
-
-		log.Info("main/metadata took ", time.Since(start))
-
-		// Cache metadata
-		metadataJSON, err := sonic.Marshal(global.Index)
-
-		if err != nil {
-			log.Error("main/metadata/cache failed to marshal metadata ", err)
-		}
-
-		cache.Replace(".", "metadata.json", metadataJSON)
 	})()
 
 	// Listen

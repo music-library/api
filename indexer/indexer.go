@@ -11,6 +11,7 @@ import (
 
 	"github.com/gosimple/slug"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/music-library/music-api/config"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -26,13 +27,14 @@ type IndexMany struct {
 // Tracks as array
 // Object with key as track id, value as arr index
 type Index struct {
-	Id        string              `json:"id"`
-	Name      string              `json:"name"`
-	Tracks    []*IndexTrack       `json:"tracks"`
-	TracksKey map[string]int      `json:"tracks_map"`
-	Albums    map[string][]string `json:"albums"` // albums[id_album] = []TracksKey
-	Decades   []string            `json:"decades"`
-	Genres    []string            `json:"genres"`
+	Id        string                             `json:"id"`
+	Name      string                             `json:"name"`
+	Libraries []config.ConfigurationMusicLibrary `json:"libraries"`
+	Tracks    []*IndexTrack                      `json:"tracks"`
+	TracksKey map[string]int                     `json:"tracks_map"`
+	Albums    map[string][]string                `json:"albums"` // albums[id_album] = []TracksKey
+	Decades   []string                           `json:"decades"`
+	Genres    []string                           `json:"genres"`
 }
 
 type IndexTrack struct {
@@ -47,6 +49,7 @@ func GetNewIndex(name string) Index {
 	return Index{
 		Id:        slug.Make(name),
 		Name:      cases.Title(language.AmericanEnglish).String(strings.ToLower(name)),
+		Libraries: config.Config.MusicLibraries,
 		Tracks:    make([]*IndexTrack, 0, 5000),
 		TracksKey: make(map[string]int, 5000),
 		Albums:    make(map[string][]string, 500),

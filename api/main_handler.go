@@ -7,7 +7,8 @@ import (
 )
 
 func MainHandler(c *fiber.Ctx) error {
-	return c.JSON(global.Index)
+	return c.JSON(global.IndexMany.Indexes[global.IndexMany.DefaultKey])
+	// return c.JSON(global.Index)
 }
 
 func TracksHandler(c *fiber.Ctx) error {

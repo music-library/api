@@ -6,7 +6,7 @@ import (
 )
 
 var IndexMany = indexer.IndexMany{
-	DefaultKey: "Main",
+	DefaultKey: "main",
 	Indexes:    make(map[string]*indexer.Index),
 }
 
