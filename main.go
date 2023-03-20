@@ -5,6 +5,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	log "github.com/sirupsen/logrus"
@@ -46,6 +47,7 @@ func main() {
 	})
 
 	// Middleware
+	app.Use(cors.New())
 	app.Use(recover.New()) // Prevent crashes due to panics
 
 	if config.Config.LogLevel == "debug" {

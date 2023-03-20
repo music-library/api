@@ -78,14 +78,11 @@ github.com/go-task/task/v3/internal/templater
 github.com/go-task/task/v3/internal/version
 github.com/go-task/task/v3/taskfile
 github.com/go-task/task/v3/taskfile/read
-# github.com/gofiber/fiber/v2 v2.40.1
-## explicit; go 1.19
+# github.com/gofiber/fiber/v2 v2.42.0
+## explicit; go 1.20
 github.com/gofiber/fiber/v2
-github.com/gofiber/fiber/v2/internal/dictpool
-github.com/gofiber/fiber/v2/internal/fwd
-github.com/gofiber/fiber/v2/internal/msgp
 github.com/gofiber/fiber/v2/internal/schema
-github.com/gofiber/fiber/v2/internal/uuid
+github.com/gofiber/fiber/v2/middleware/cors
 github.com/gofiber/fiber/v2/middleware/logger
 github.com/gofiber/fiber/v2/middleware/recover
 github.com/gofiber/fiber/v2/utils
@@ -95,6 +92,9 @@ github.com/golang/mock/gomock
 # github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 ## explicit; go 1.13
 github.com/google/shlex
+# github.com/google/uuid v1.3.0
+## explicit
+github.com/google/uuid
 # github.com/gosimple/slug v1.13.1
 ## explicit; go 1.11
 github.com/gosimple/slug
@@ -149,6 +149,9 @@ github.com/mitchellh/iochan
 # github.com/pelletier/go-toml v1.9.5
 ## explicit; go 1.12
 github.com/pelletier/go-toml
+# github.com/philhofer/fwd v1.1.1
+## explicit
+github.com/philhofer/fwd
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
@@ -161,6 +164,12 @@ github.com/rivo/uniseg
 # github.com/sajari/fuzzy v1.0.0
 ## explicit
 github.com/sajari/fuzzy
+# github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94
+## explicit; go 1.13
+github.com/savsgio/dictpool
+# github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d
+## explicit; go 1.13
+github.com/savsgio/gotils/strconv
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
@@ -170,6 +179,9 @@ github.com/spf13/pflag
 # github.com/stretchr/testify v1.8.1
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
+# github.com/tinylib/msgp v1.1.6
+## explicit; go 1.14
+github.com/tinylib/msgp/msgp
 # github.com/twitchyliquid64/golang-asm v0.15.1
 ## explicit; go 1.13
 github.com/twitchyliquid64/golang-asm/asm/arch
@@ -192,7 +204,7 @@ github.com/twitchyliquid64/golang-asm/unsafeheader
 # github.com/valyala/bytebufferpool v1.0.0
 ## explicit
 github.com/valyala/bytebufferpool
-# github.com/valyala/fasthttp v1.41.0
+# github.com/valyala/fasthttp v1.44.0
 ## explicit; go 1.16
 github.com/valyala/fasthttp
 github.com/valyala/fasthttp/fasthttputil
