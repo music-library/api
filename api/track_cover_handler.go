@@ -18,7 +18,7 @@ func TrackCoverHandler(c *fiber.Ctx) error {
 	libId := c.Locals("libId").(string)
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := global.IndexMany.Indexes[libId].Get(trackId)
-	cache := useCache.GetCache(".")
+	cache := useCache.GetCache(global.IndexMany.Indexes[libId].Id)
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/cover track does not exist")
