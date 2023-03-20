@@ -90,7 +90,7 @@ func GetConfig() Configuration {
 
 	// Remove empty music library configs
 	for i, musicLibConfig := range config.MusicLibraries {
-		if len(musicLibConfig.Path) == 0 {
+		if len(musicLibConfig.Name) == 0 {
 			config.MusicLibraries = config.MusicLibraries[:i]
 			break
 		}
