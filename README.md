@@ -18,9 +18,7 @@ API for the Music-Library project, written in Go.
 ### Additional
 
 -   [x] One instance, handle multiple libraries
-    -   [x] Middleware to handle library selection (via `:libId` param)
-    -   [ ] Middleware to handle library selection (via `X-Library` header)
-    -   [x] `/lib` - list libraries
+    -   [x] Middleware to handle library selection (via `X-Library` header)
     -   [ ] Frontend to select library
         -   [ ] Default library needs to be set so FE is never blocked on what to load
         -   [x] Available libraries need to be sent to the FE
