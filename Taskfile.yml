@@ -2,9 +2,9 @@ version: '3'
 
 vars:
     GIT_BRANCH:
-        sh: git rev-parse --abbrev-ref HEAD
+        sh: git rev-parse --abbrev-ref HEAD || echo ""
     GIT_COMMIT:
-        sh: git log -n 1 --format=%h
+        sh: git log -n 1 --format=%h || echo ""
     GIT_DIRTY:
         sh: test -n "`git status --porcelain`" && echo "+CHANGES" || true
 
