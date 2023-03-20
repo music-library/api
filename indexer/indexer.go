@@ -9,23 +9,62 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gosimple/slug"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/music-library/music-api/config"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
+
+// TODO: Implement this
+type IndexMany struct {
+	// Default (fallback) `Indexes` map key.
+	DefaultKey string
+	// Store multiple indexes. An index is the meta needed for an entire music library.
+	Indexes map[string]*Index
+}
+
+// Tracks as array
+// Object with key as track id, value as arr index
+type Index struct {
+	Id        string                             `json:"id"`
+	Name      string                             `json:"name"`
+	Libraries []config.ConfigurationMusicLibrary `json:"libraries"`
+	Tracks    []*IndexTrack                      `json:"tracks"`
+	TracksKey map[string]int                     `json:"tracks_map"`
+	Albums    map[string][]string                `json:"albums"` // albums[id_album] = []TracksKey
+	Decades   []string                           `json:"decades"`
+	Genres    []string                           `json:"genres"`
+}
 
 type IndexTrack struct {
 	Id       string    `json:"id"`
 	IdAlbum  string    `json:"id_album"`
-	Path     string    `json:"path"`
+	Path     string    `json:"-"`
 	Metadata *Metadata `json:"metadata"`
 	Stats    *Stat     `json:"stats"`
 }
 
-type Index struct {
-	Tracks      map[string]*IndexTrack
-	TracksCount uint64
-	// Albums [][]string // Slice of IndexTrack.Id
-	// Genres []string
-	// Decades []string
+func GetNewIndex(name string) Index {
+	return Index{
+		Id:        slug.Make(name),
+		Name:      cases.Title(language.AmericanEnglish).String(strings.ToLower(name)),
+		Libraries: config.Config.MusicLibraries,
+		Tracks:    make([]*IndexTrack, 0, 5000),
+		TracksKey: make(map[string]int, 5000),
+		Albums:    make(map[string][]string, 500),
+	}
+}
+
+// Safely get track from index
+func (index *Index) Get(trackId string) (*IndexTrack, bool) {
+	trackIndex, ok := index.TracksKey[trackId]
+
+	if !ok || trackIndex >= len(index.Tracks) {
+		return nil, false
+	}
+
+	return index.Tracks[trackIndex], true
 }
 
 // Populate File index with audio `IndexTrack` objects
@@ -42,13 +81,13 @@ func (index *Index) Populate(path string) {
 		if !entry.IsDir() && IsFileAudio(itemPath) {
 			itemId := HashString(itemPath)
 
-			index.TracksCount += 1
-			index.Tracks[itemId] = &IndexTrack{
+			index.TracksKey[itemId] = len(index.Tracks)
+			index.Tracks = append(index.Tracks, &IndexTrack{
 				Id:       itemId,
 				Path:     itemPath,
 				Metadata: GetEmptyMetadata(),
 				Stats:    GetEmptyStat(),
-			}
+			})
 		}
 
 		return nil
@@ -63,14 +102,16 @@ func (index *Index) Populate(path string) {
 
 // Populate IndexTrack with actual metadata
 func (index *Index) PopulateFileMetadata(indexTrack *IndexTrack) *IndexTrack {
-	if index.Tracks[indexTrack.Id].Metadata.Title == "(unknown)" {
+	trackIndex := index.TracksKey[indexTrack.Id]
+
+	if index.Tracks[trackIndex].Metadata.Title == "(unknown)" {
 		metadata := GetTrackMetadata(indexTrack.Path)
-		index.Tracks[indexTrack.Id].Metadata = metadata
+		index.Tracks[trackIndex].Metadata = metadata
 	}
 
-	index.Tracks[indexTrack.Id].IdAlbum = HashString(index.Tracks[indexTrack.Id].Metadata.Album + index.Tracks[indexTrack.Id].Metadata.AlbumArtist)
+	index.Tracks[trackIndex].IdAlbum = HashString(index.Tracks[trackIndex].Metadata.Album + index.Tracks[trackIndex].Metadata.AlbumArtist)
 
-	return index.Tracks[indexTrack.Id]
+	return index.Tracks[trackIndex]
 }
 
 // Crawl each file in the index
@@ -78,6 +119,10 @@ func (index *Index) Crawl(callback func(IndexTrack)) {
 	for _, v := range index.Tracks {
 		callback(*v)
 	}
+}
+
+func GetTrackNgramString(indexTrack *IndexTrack) string {
+	return strings.ToLower(fmt.Sprintf("%s %s %s %s", indexTrack.Metadata.Album, indexTrack.Metadata.AlbumArtist, indexTrack.Metadata.Artist, indexTrack.Metadata.Title))
 }
 
 // Check if file is audio file

@@ -8,8 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bytedance/sonic"
 	"github.com/dhowden/tag"
 	log "github.com/sirupsen/logrus"
+	useCache "gitlab.com/music-library/music-api/cache"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -33,6 +35,7 @@ type Metadata struct {
 	AlbumArtist string `json:"album_artist"`
 	Album       string `json:"album"`
 	Year        string `json:"year"`
+	Decade      string `json:"decade"`
 	Genre       string `json:"genre"`
 	Composer    string `json:"composer"`
 	Duration    int    `json:"duration"` // in seconds
@@ -47,6 +50,7 @@ func GetEmptyMetadata() *Metadata {
 		AlbumArtist: "~",
 		Album:       "~",
 		Year:        "~",
+		Decade:      "~",
 		Genre:       "~",
 		Composer:    "~",
 		Duration:    0,
@@ -117,6 +121,10 @@ func GetTrackMetadata(filePath string) *Metadata {
 	}
 	baseMeta.Year = year
 
+	if len(year) == 4 {
+		baseMeta.Decade = year[:3] + "0"
+	}
+
 	genre := cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Genre()))
 	if len(genre) == 0 {
 		genre = "~"
@@ -155,10 +163,7 @@ func GetTrackCover(filePath string) ([]byte, string) {
 	return picture.Data, mimeType
 }
 
-func ResizeTrackCover(idAlbum string, size string) (string, error) {
-	cache := Cache{
-		Path: "./data",
-	}
+func ResizeTrackCover(idAlbum string, size string, cache useCache.Cache) (string, error) {
 	imgPath := fmt.Sprintf("%s/cover.jpg", idAlbum)
 	imgResizePath := fmt.Sprintf("%s/%s.jpg", idAlbum, size)
 
@@ -172,4 +177,19 @@ func ResizeTrackCover(idAlbum string, size string) (string, error) {
 	}
 
 	return imgResizePath, nil
+}
+
+func ReadAndParseMetadata(cache useCache.Cache) *Index {
+	metadataRaw, err := cache.Read("metadata.json")
+	indexCache := &Index{}
+
+	if err != nil {
+		log.Error("cache/parse/metadata failed to read cache file metadata.json")
+	}
+
+	if err == nil {
+		sonic.Unmarshal(metadataRaw, indexCache)
+	}
+
+	return indexCache
 }

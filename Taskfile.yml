@@ -1,0 +1,74 @@
+version: '3'
+
+vars:
+    GIT_BRANCH:
+        sh: git rev-parse --abbrev-ref HEAD
+    GIT_COMMIT:
+        sh: git log -n 1 --format=%h
+    GIT_DIRTY:
+        sh: test -n "`git status --porcelain`" && echo "+CHANGES" || true
+
+tasks:
+    #
+    # Boring
+    #
+    fmt:
+        cmds:
+            - go fmt ./...
+
+    lint:
+        deps: [fmt]
+        cmds:
+            - golint ./...
+
+    vet:
+        deps: [fmt]
+        cmds:
+            - go vet ./...
+
+    bootstrap:
+        cmds:
+            - go install -mod vendor github.com/cosmtrek/air
+            - go install -mod vendor github.com/go-task/task/v3/cmd/task
+            - go install -mod vendor github.com/mitchellh/gox
+            - go install -mod vendor gotest.tools/gotestsum
+            - go generate -tags tools tools/tools.go
+
+    #
+    # Run, test, & bench
+    #
+    run:
+        aliases: [dev]
+        cmds:
+            - air
+
+    test:
+        cmds:
+            - go clean -testcache
+            - gotestsum --format pkgname -- --cover -mod vendor ./...
+
+    bench:
+        cmds:
+            - go test --cover -mod vendor -bench . -benchmem ./...
+
+    #
+    # Build
+    #
+    buildq:
+        cmds:
+            - go build -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -mod vendor .
+
+    builddev:
+        cmds:
+            - go build -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -mod vendor -tags "music-api-dev" -o "bin/music-api-dev.exe" .
+
+    builddocker:
+        cmds:
+            - docker stop music-api
+            - docker rm music-api
+            - docker build --no-cache -t music-api .
+
+    build:
+        deps: [vet]
+        cmds:
+            - gox -osarch "linux/amd64" -gocmd go -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -tags "music-api" -output "bin/music-api" .

@@ -16,8 +16,9 @@ import (
 )
 
 func TrackAudioHandler(c *fiber.Ctx) error {
+	libId := c.Locals("libId").(string)
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := global.Index.Tracks[trackId]
+	track, ok := global.IndexMany.Indexes[libId].Get(trackId)
 
 	if !ok {
 		log.Error("http/track/" + trackId + "/audio track does not exist")
@@ -71,6 +72,7 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		chunksize := end - start + 1
 		buffer := make([]byte, chunksize)
 		bytesread, err := file.ReadAt(buffer, start)
+
 		if err != nil {
 			log.Error("http/track/" + trackId + "/audio track file failed to read correctly")
 		}

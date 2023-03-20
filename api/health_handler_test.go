@@ -71,7 +71,7 @@ func TestHealthHandler(t *testing.T) {
 	for _, test := range tests {
 		index := indexer.TestGenerateIndex(test.tracksCount)
 		global.Index.Tracks = index.Tracks
-		global.Index.TracksCount = index.TracksCount
+		global.Index.TracksKey = index.TracksKey
 
 		// Create a new http request with the route from the test case
 		req := httptest.NewRequest(test.method, test.route, nil)

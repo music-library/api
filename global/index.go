@@ -1,12 +1,19 @@
 package global
 
-import "gitlab.com/music-library/music-api/indexer"
+import (
+	"github.com/hmerritt/go-ngram"
+	"gitlab.com/music-library/music-api/indexer"
+)
 
-var Index = indexer.Index{
-	Tracks:      make(map[string]*indexer.IndexTrack, 5000),
-	TracksCount: 0,
+var IndexMany = indexer.IndexMany{
+	DefaultKey: "main",
+	Indexes:    make(map[string]*indexer.Index),
 }
 
-var Cache = indexer.Cache{
-	Path: DATA_DIR,
+var Index = indexer.GetNewIndex("main")
+
+var IndexNgram = ngram.NgramIndex{
+	NgramMap:   make(map[string]map[int]*ngram.IndexValue),
+	IndexesMap: make(map[int]*ngram.IndexValue),
+	Ngram:      3,
 }
