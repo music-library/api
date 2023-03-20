@@ -63,10 +63,9 @@ tasks:
             - go build -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -mod vendor -tags "music-api-dev" -o "bin/music-api-dev.exe" .
 
     builddocker:
+        deps: [vet]
         cmds:
-            - docker stop music-api
-            - docker rm music-api
-            - docker build --no-cache -t music-api .
+            - go build -ldflags "-s -w -X gitlab.com/music-library/music-api/version.GitBranch={{.GIT_BRANCH}} -X gitlab.com/music-library/music-api/version.GitCommit={{.GIT_COMMIT}}" -mod vendor -buildvcs=false -tags "music-api" -o "bin/music-api" .
 
     build:
         deps: [vet]
