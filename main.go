@@ -38,7 +38,6 @@ func main() {
 	version.PrintTitle()
 
 	// Initiate Fiber web-server
-	//
 	// Uses custom JSON encoding as recommended: https://docs.gofiber.io/guide/faster-fiber
 	app := fiber.New(fiber.Config{
 		AppName:     "music-api",
