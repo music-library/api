@@ -2,9 +2,11 @@
 FROM golang:1.18.3-alpine as build
 WORKDIR /app
 COPY / /app
-RUN apk add --update make gcc g++ libc-dev
-ENV PKG_CONFIG_PATH /usr/lib:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
-RUN make bootstrap && make build
+RUN apk add --update gcc libc-dev git
+RUN go install -mod vendor github.com/go-task/task/v3/cmd/task
+RUN go generate -tags tools tools/tools.go
+RUN task bootstrap
+RUN task build
 
 # production environment
 FROM alpine:3.16.0
