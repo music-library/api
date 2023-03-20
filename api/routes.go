@@ -11,13 +11,13 @@ func ApiRoutes(router fiber.Router) {
 	router.All("/", BaseHandler)
 
 	// Library
-	router.Get("/lib", LibIdPatchMiddleware, MainHandler)
-	router.Get("/lib/tracks", LibIdPatchMiddleware, TracksHandler)
-	router.Get("/lib/tracks/search/:query", LibIdPatchMiddleware, SearchHandler)
+	router.Get("/lib/:libId?", LibIdPatchMiddleware, MainHandler)
+	router.Get("/lib/:libId/tracks", LibIdPatchMiddleware, TracksHandler)
+	router.Get("/lib/:libId/tracks/search/:query", LibIdPatchMiddleware, SearchHandler)
 
-	router.Get("/lib/tracks/:id", LibIdPatchMiddleware, TrackHandler)
-	router.Get("/lib/tracks/:id/audio", LibIdPatchMiddleware, TrackAudioHandler)
-	router.Get("/lib/tracks/:id/cover/:size?", LibIdPatchMiddleware, TrackCoverHandler)
+	router.Get("/lib/:libId/tracks/:id", LibIdPatchMiddleware, TrackHandler)
+	router.Get("/lib/:libId/tracks/:id/audio", LibIdPatchMiddleware, TrackAudioHandler)
+	router.Get("/lib/:libId/tracks/:id/cover/:size?", LibIdPatchMiddleware, TrackCoverHandler)
 
 	// Health
 	router.Get("/health", HealthHandler)
@@ -25,7 +25,10 @@ func ApiRoutes(router fiber.Router) {
 }
 
 func LibIdPatchMiddleware(c *fiber.Ctx) error {
-	libId := c.Get("X-Library", global.IndexMany.DefaultKey)
+	libId := c.Params("libId", global.IndexMany.DefaultKey)
+
+	// @Node: Header has a problem: We can't set one on the FE for things like img src or audio src
+	// libId := c.Get("X-Library", global.IndexMany.DefaultKey)
 
 	c.Locals("libId", libId)
 
