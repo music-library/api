@@ -76,6 +76,9 @@ func initRawMetadataFromGoLib(filePath string) tag.Metadata {
 	return meta
 }
 
+// Extract metadata from file using Go lib.
+//
+// @Note: Doesn't support duration.
 func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
 	meta := initRawMetadataFromGoLib(filePath)
 
@@ -95,6 +98,9 @@ func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
 	return baseMeta
 }
 
+// Extract metadata from file using *external* CLI tool.
+//
+// @Note: Supports duration. Seems to be ~10x slower than Go lib.
 func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metadata, error) {
 	mediainfoJSON, err := exec.Command("mediainfo", "--Output=JSON", filePath).CombinedOutput()
 
