@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/dhowden/tag"
@@ -96,7 +95,7 @@ func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
 	return baseMeta
 }
 
-func getRawMetadataFromCLI(baseMeta *Metadata, filePath string) (*Metadata, error) {
+func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metadata, error) {
 	mediainfoJSON, err := exec.Command("mediainfo", "--Output=JSON", filePath).CombinedOutput()
 
 	if err != nil {
@@ -121,7 +120,7 @@ func getRawMetadataFromCLI(baseMeta *Metadata, filePath string) (*Metadata, erro
 	}{}
 
 	// Parse JSON
-	err = sonic.Unmarshal(mediainfoJSON, mediainfo)
+	err = sonic.Unmarshal(mediainfoJSON, &mediainfo)
 
 	if err != nil {
 		log.Error("index/metadata/CLI failed to unmarshal json response" + filePath + " err: " + err.Error())
@@ -193,11 +192,15 @@ func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
 
 func GetTrackMetadata(filePath string) *Metadata {
 	meta := GetEmptyMetadata()
+	err := error(nil)
 
-	start := time.Now()
-	meta = getRawMetadataFromGoLib(meta, filePath)
+	meta, err = getRawMetadataFromMediaInfoCli(meta, filePath)
+
+	if err != nil {
+		meta = getRawMetadataFromGoLib(meta, filePath)
+	}
+
 	meta = refineRawMetadata(meta, filePath)
-	fmt.Println(time.Since(start))
 
 	return meta
 }
