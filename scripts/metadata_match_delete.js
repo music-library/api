@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const metadata = require('./metadata.json');
-const newMetadata = [];
+const newTracks = [];
+const newTracksMap = {};
 
 //
 // Match track and delete from metadata
@@ -11,28 +12,34 @@ console.log(`Match track and delete from metadata
 `);
 
 // Options
-const DRY_RUN = false;
-const MATCH_PATTERN = /(\[1958\] The Lady In Red)/i;
+const DRY_RUN = true;
+const MATCH_PATTERN = /(\Be Mine Tonight)/i;
 
-for (const key in metadata) {
-	const track = metadata[key];
-	const { path: trackPath, metadata: meta } = track;
-	const { title, artist } = meta;
+for (const key in metadata.tracks) {
+	const track = metadata.tracks[key];
+	const { metadata: meta } = track;
+	const { artist, album_artist, album, title, year } = meta;
 
 	// If path matches, skip
-	if (trackPath.match(MATCH_PATTERN)) {
+	if (`${year} ${album} ${album_artist} ${artist} ${title}`.match(MATCH_PATTERN)) {
 		console.log(`Matched: ${artist} - ${title}`);
 		continue;
 	}
 
-	newMetadata.push(track);
+	newTracks.push(track);
+}
+
+// Re-build tracks_map
+for (const key in metadata.tracks) {
+	const track = metadata.tracks[key];
+	newTracksMap[track.id] = key;
 }
 
 console.log('');
-console.log('Tracks before:', metadata.length);
-console.log('Tracks after: ', newMetadata.length);
+console.log('Tracks before:', metadata.tracks.length);
+console.log('Tracks after: ', newTracks.length);
 if (DRY_RUN) console.log('DRY RUN: No changes made');
 
 
 // Overwrite metadata
-if (!DRY_RUN) fs.writeFileSync(path.resolve(__dirname, 'metadata.json'), JSON.stringify(newMetadata));
+if (!DRY_RUN) fs.writeFileSync(path.resolve(__dirname, 'metadata.json'), JSON.stringify({ ...metadata, tracks: newTracks, tracks_map: newTracksMap }));
