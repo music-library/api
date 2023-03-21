@@ -32,7 +32,7 @@ for (const key in metadata.tracks) {
 // Re-build tracks_map
 for (const key in metadata.tracks) {
 	const track = metadata.tracks[key];
-	newTracksMap[track.id] = key;
+	newTracksMap[track.id] = Number(key);
 }
 
 console.log('');
