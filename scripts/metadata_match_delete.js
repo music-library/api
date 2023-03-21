@@ -40,6 +40,5 @@ console.log('Tracks before:', metadata.tracks.length);
 console.log('Tracks after: ', newTracks.length);
 if (DRY_RUN) console.log('DRY RUN: No changes made');
 
-
 // Overwrite metadata
 if (!DRY_RUN) fs.writeFileSync(path.resolve(__dirname, 'metadata.json'), JSON.stringify({ ...metadata, tracks: newTracks, tracks_map: newTracksMap }));
