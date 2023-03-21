@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/dhowden/tag"
@@ -61,7 +63,7 @@ func initRawMetadataFromGoLib(filePath string) tag.Metadata {
 	file, fileErr := os.Open(filePath)
 
 	if fileErr != nil {
-		log.Error("index/metadata failed to open file " + filePath)
+		log.Error("index/metadata/GoLib failed to open file " + filePath)
 	}
 
 	defer file.Close()
@@ -69,7 +71,7 @@ func initRawMetadataFromGoLib(filePath string) tag.Metadata {
 	meta, err := tag.ReadFrom(io.ReadSeeker(file))
 
 	if err != nil {
-		log.Error("index/metadata failed to extract metadata from " + filePath)
+		log.Error("index/metadata/GoLib failed to extract metadata from " + filePath)
 	}
 
 	return meta
@@ -92,6 +94,54 @@ func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
 	// baseMeta.Duration = meta.Duration()
 
 	return baseMeta
+}
+
+func getRawMetadataFromCLI(baseMeta *Metadata, filePath string) (*Metadata, error) {
+	mediainfoJSON, err := exec.Command("mediainfo", "--Output=JSON", filePath).CombinedOutput()
+
+	if err != nil {
+		log.Error("index/metadata/CLI failed to extract metadata from " + filePath + " err: " + err.Error())
+		return baseMeta, err
+	}
+
+	mediainfo := struct {
+		Media struct {
+			Track []struct {
+				Track       string `json:"Track_Position"`
+				Title       string `json:"Title"`
+				Artist      string `json:"Performer"`
+				AlbumArtist string `json:"Album_Performer"`
+				Album       string `json:"Album"`
+				Year        string `json:"Recorded_Date"`
+				Genre       string `json:"Genre"`
+				Composer    string `json:"Composer"`
+				Duration    string `json:"Duration"`
+			} `json:"track"`
+		} `json:"media"`
+	}{}
+
+	// Parse JSON
+	err = sonic.Unmarshal(mediainfoJSON, mediainfo)
+
+	if err != nil {
+		log.Error("index/metadata/CLI failed to unmarshal json response" + filePath + " err: " + err.Error())
+		return baseMeta, err
+	}
+
+	track := mediainfo.Media.Track[0]
+	durationFloat, _ := strconv.ParseFloat(track.Duration, 32)
+	trackNo, _ := strconv.Atoi(strings.TrimLeft(track.Track, "0")) // Trim leading zeros
+	baseMeta.Track = trackNo
+	baseMeta.Title = track.Title
+	baseMeta.Artist = track.Artist
+	baseMeta.AlbumArtist = track.AlbumArtist
+	baseMeta.Album = track.Album
+	baseMeta.Year = track.Year
+	baseMeta.Genre = track.Genre
+	baseMeta.Composer = track.Composer
+	baseMeta.Duration = int(durationFloat)
+
+	return baseMeta, nil
 }
 
 func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
@@ -144,8 +194,10 @@ func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
 func GetTrackMetadata(filePath string) *Metadata {
 	meta := GetEmptyMetadata()
 
+	start := time.Now()
 	meta = getRawMetadataFromGoLib(meta, filePath)
 	meta = refineRawMetadata(meta, filePath)
+	fmt.Println(time.Since(start))
 
 	return meta
 }
