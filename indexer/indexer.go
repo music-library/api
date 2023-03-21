@@ -16,7 +16,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-// TODO: Implement this
 type IndexMany struct {
 	// Default (fallback) `Indexes` map key.
 	DefaultKey string

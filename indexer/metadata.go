@@ -75,70 +75,72 @@ func getRawMetadata(filePath string) tag.Metadata {
 	return meta
 }
 
+func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
+	if len(meta.Title) == 0 {
+		// Use filename as title if no title is found
+		meta.Title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+
+		// Attempt to clean up title (worth a shot)
+		meta.Title = strings.ReplaceAll(meta.Title, "_", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, "-", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, ".", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, "   ", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, "  ", " ")
+		meta.Title = cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Title))
+	}
+
+	if len(meta.Artist) == 0 {
+		meta.Artist = "~"
+	}
+
+	if len(meta.AlbumArtist) == 0 {
+		meta.AlbumArtist = "~"
+	}
+
+	if len(meta.Album) == 0 {
+		meta.Album = "~"
+	}
+
+	if len(meta.Year) < 4 {
+		meta.Year = "~"
+	}
+
+	if len(meta.Year) == 4 {
+		meta.Decade = meta.Year[:3] + "0"
+	}
+
+	if len(meta.Genre) == 0 {
+		meta.Genre = "~"
+	} else {
+		meta.Genre = cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Genre))
+	}
+
+	if len(meta.Composer) == 0 {
+		meta.Composer = "~"
+	}
+
+	return meta
+}
+
 func GetTrackMetadata(filePath string) *Metadata {
 	baseMeta := GetEmptyMetadata()
 	meta := getRawMetadata(filePath)
 
-	track, _ := meta.Track()
-	baseMeta.Track = track
+	trackNo, _ := meta.Track()
 
-	title := meta.Title()
-	if len(title) == 0 {
-		// Use filename as title if no title is found
-		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
-
-		// Attempt to clean up title (worth a shot)
-		title = strings.ReplaceAll(title, "_", " ")
-		title = strings.ReplaceAll(title, "-", " ")
-		title = strings.ReplaceAll(title, ".", " ")
-		title = strings.ReplaceAll(title, "   ", " ")
-		title = strings.ReplaceAll(title, "  ", " ")
-		title = cases.Title(language.AmericanEnglish).String(strings.ToLower(title))
-	}
-	baseMeta.Title = title
-
-	artist := meta.Artist()
-	if len(artist) == 0 {
-		artist = "~"
-	}
-	baseMeta.Artist = artist
-
-	albumArtist := meta.AlbumArtist()
-	if len(albumArtist) == 0 {
-		albumArtist = "~"
-	}
-	baseMeta.AlbumArtist = albumArtist
-
-	album := meta.Album()
-	if len(album) == 0 {
-		album = "~"
-	}
-	baseMeta.Album = album
-
-	year := fmt.Sprint(meta.Year())
-	if len(year) < 4 {
-		year = "~"
-	}
-	baseMeta.Year = year
-
-	if len(year) == 4 {
-		baseMeta.Decade = year[:3] + "0"
-	}
-
-	genre := cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Genre()))
-	if len(genre) == 0 {
-		genre = "~"
-	}
-	baseMeta.Genre = genre
-
-	composer := meta.Composer()
-	if len(composer) == 0 {
-		composer = "~"
-	}
-	baseMeta.Composer = composer
+	baseMeta.Track = trackNo
+	baseMeta.Title = meta.Title()
+	baseMeta.Artist = meta.Artist()
+	baseMeta.AlbumArtist = meta.AlbumArtist()
+	baseMeta.Album = meta.Album()
+	baseMeta.Year = fmt.Sprint(meta.Year())
+	baseMeta.Genre = meta.Genre()
+	baseMeta.Composer = meta.Composer()
 
 	// @TODO
 	// baseMeta.Duration = meta.Duration()
+
+	baseMeta = refineRawMetadata(baseMeta, filePath)
 
 	return baseMeta
 }
