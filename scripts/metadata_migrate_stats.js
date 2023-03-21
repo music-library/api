@@ -20,7 +20,7 @@ for (const key in metadata.tracks) {
 	const { artist, title } = meta;
 
 	// Find legacy track
-	const legacyTrack = metadataLegacy.find(t => t.id === track.id);
+	const legacyTrack = metadataLegacy.find(t => t.metadata.album === track.metadata.album && t.metadata.album_artist === track.metadata.album_artist && t.metadata.artist === track.metadata.artist && t.metadata.title === track.metadata.title);
 	if (legacyTrack) {
 		console.log(`Matched: ${artist} - ${title}`);
 		track.metadata.duration = legacyTrack.metadata.duration;
