@@ -57,7 +57,7 @@ func GetEmptyMetadata() *Metadata {
 	}
 }
 
-func getRawMetadata(filePath string) tag.Metadata {
+func initRawMetadataFromGoLib(filePath string) tag.Metadata {
 	file, fileErr := os.Open(filePath)
 
 	if fileErr != nil {
@@ -73,6 +73,25 @@ func getRawMetadata(filePath string) tag.Metadata {
 	}
 
 	return meta
+}
+
+func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
+	meta := initRawMetadataFromGoLib(filePath)
+
+	trackNo, _ := meta.Track()
+	baseMeta.Track = trackNo
+	baseMeta.Title = meta.Title()
+	baseMeta.Artist = meta.Artist()
+	baseMeta.AlbumArtist = meta.AlbumArtist()
+	baseMeta.Album = meta.Album()
+	baseMeta.Year = fmt.Sprint(meta.Year())
+	baseMeta.Genre = meta.Genre()
+	baseMeta.Composer = meta.Composer()
+
+	// @Note - Duration is not supported by dhowden/tag
+	// baseMeta.Duration = meta.Duration()
+
+	return baseMeta
 }
 
 func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
@@ -101,7 +120,7 @@ func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
 		meta.Album = "~"
 	}
 
-	if len(meta.Year) < 4 {
+	if len(meta.Year) < 4 || len(meta.Year) > 4 {
 		meta.Year = "~"
 	}
 
@@ -123,31 +142,17 @@ func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
 }
 
 func GetTrackMetadata(filePath string) *Metadata {
-	baseMeta := GetEmptyMetadata()
-	meta := getRawMetadata(filePath)
+	meta := GetEmptyMetadata()
 
-	trackNo, _ := meta.Track()
+	meta = getRawMetadataFromGoLib(meta, filePath)
+	meta = refineRawMetadata(meta, filePath)
 
-	baseMeta.Track = trackNo
-	baseMeta.Title = meta.Title()
-	baseMeta.Artist = meta.Artist()
-	baseMeta.AlbumArtist = meta.AlbumArtist()
-	baseMeta.Album = meta.Album()
-	baseMeta.Year = fmt.Sprint(meta.Year())
-	baseMeta.Genre = meta.Genre()
-	baseMeta.Composer = meta.Composer()
-
-	// @TODO
-	// baseMeta.Duration = meta.Duration()
-
-	baseMeta = refineRawMetadata(baseMeta, filePath)
-
-	return baseMeta
+	return meta
 }
 
 // Returns cover image as byte array, and mime type
 func GetTrackCover(filePath string) ([]byte, string) {
-	meta := getRawMetadata(filePath)
+	meta := initRawMetadataFromGoLib(filePath)
 
 	picture := meta.Picture()
 
