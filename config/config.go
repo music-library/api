@@ -12,6 +12,7 @@ type Configuration struct {
 	LogFile         string    `json:"log_file"`
 	LogLevel        string    `json:"log_level"`
 	ServerStartTime time.Time `json:"server_start_time"`
+	AuthPassword    string    `json:"auth_password"`
 	// Music Library
 	DataDir      string `json:"data_dir"`
 	MusicDir     string `json:"music_dir"`
@@ -45,6 +46,7 @@ func GetConfig() Configuration {
 		LogFile:         GetEnv("LOG_FILE", fmt.Sprintf("%s/music-api.log", DATA_DIR)),
 		LogLevel:        GetEnv("LOG_LEVEL", "info"),
 		ServerStartTime: time.Now(),
+		AuthPassword:    GetEnv("AUTH_PASSWORD", "lol"),
 		// Music Library
 		DataDir:      DATA_DIR,
 		MusicDir:     MUSIC_DIR,

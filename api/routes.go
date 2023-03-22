@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
@@ -22,6 +23,17 @@ func ApiRoutes(router fiber.Router) {
 	// Health
 	router.Get("/health", HealthHandler)
 	router.Get("/health/metrics", HealthHandler) // Prometheus style metrics?
+	router.Get("/reindex/:password", PasswordMiddleware, ReindexHandler)
+}
+
+func PasswordMiddleware(c *fiber.Ctx) error {
+	password := c.Params("password")
+
+	if password != config.Config.AuthPassword {
+		return Error(c, 403, "forbidden")
+	}
+
+	return c.Next()
 }
 
 func LibIdPatchMiddleware(c *fiber.Ctx) error {

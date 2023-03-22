@@ -14,3 +14,8 @@ func TracksHandler(c *fiber.Ctx) error {
 	libId := c.Locals("libId").(string)
 	return c.JSON(indexer.MusicLibIndex.Indexes[libId].Tracks)
 }
+
+func ReindexHandler(c *fiber.Ctx) error {
+	indexer.IndexAllLibraries()
+	return c.JSON("ok")
+}
