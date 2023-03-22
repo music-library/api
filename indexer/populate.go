@@ -8,18 +8,19 @@ import (
 	"github.com/bytedance/sonic"
 	log "github.com/sirupsen/logrus"
 	useCache "gitlab.com/music-library/music-api/cache"
+	"gitlab.com/music-library/music-api/config"
 )
 
-// Call this function to index all music libraries
-// func IndexAll() {
-// 	go (func() {
-// 		// Index all music libraries
-// 		for _, musicLibConfig := range config.Config.MusicLibraries {
-// 			mainIndex := BootstrapIndex(musicLibConfig.Name, musicLibConfig.Path)
-// 			global.IndexMany.Indexes[mainIndex.Id] = mainIndex
-// 		}
-// 	})()
-// }
+// Call this function to (re)index all music libraries
+func IndexAllLibraries() {
+	go (func() {
+		// Index all music libraries
+		for _, musicLibConfig := range config.Config.MusicLibraries {
+			mainIndex := BootstrapIndex(musicLibConfig.Name, musicLibConfig.Path)
+			MusicLibIndex.Indexes[mainIndex.Id] = mainIndex
+		}
+	})()
+}
 
 // Async index population (to prevent blocking the server)
 func BootstrapIndex(name, dir string) *Index {
@@ -74,7 +75,7 @@ func BootstrapIndex(name, dir string) *Index {
 
 	for _, track := range newIndex.Tracks {
 		// ngram index
-		// global.IndexNgram.Add(GetTrackNgramString(track), ngram.NewIndexValue(index, track))
+		// indexer.IndexNgram.Add(GetTrackNgramString(track), ngram.NewIndexValue(index, track))
 
 		// albums
 		_, ok := newIndex.Albums[track.IdAlbum]

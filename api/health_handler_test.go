@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
@@ -74,7 +73,7 @@ func TestHealthHandler(t *testing.T) {
 	// Iterate through single test cases
 	for _, test := range tests {
 		indexMany := *indexer.TestGenerateIndexMany(test.indexNames, test.tracksCount)
-		global.IndexMany = indexMany
+		indexer.MusicLibIndex = indexMany
 
 		// Create a new http request with the route from the test case
 		req := httptest.NewRequest(test.method, test.route, nil)

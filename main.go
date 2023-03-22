@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
 	"gitlab.com/music-library/music-api/config"
-	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 	"gitlab.com/music-library/music-api/version"
 )
@@ -57,14 +56,7 @@ func main() {
 	// Setup the router
 	api.ApiRoutes(app)
 
-	// Async index population (to prevent blocking the server)
-	go (func() {
-		// Index all music libraries
-		for _, musicLibConfig := range config.Config.MusicLibraries {
-			mainIndex := indexer.BootstrapIndex(musicLibConfig.Name, musicLibConfig.Path)
-			global.IndexMany.Indexes[mainIndex.Id] = mainIndex
-		}
-	})()
+	indexer.IndexAllLibraries()
 
 	// Listen
 	log.Info("music-api server listening on " + ListenAddr())

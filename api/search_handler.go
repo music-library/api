@@ -5,12 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
 func SearchHandler(c *fiber.Ctx) error {
-	indexValues := global.IndexNgram.Search(strings.ToLower(c.Params("query")))
+	indexValues := indexer.IndexNgram.Search(strings.ToLower(c.Params("query")))
 	tracksArr := make([]string, 0, len(indexValues))
 
 	for _, track := range indexValues {
