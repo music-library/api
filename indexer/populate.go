@@ -10,6 +10,17 @@ import (
 	useCache "gitlab.com/music-library/music-api/cache"
 )
 
+// Call this function to index all music libraries
+// func IndexAll() {
+// 	go (func() {
+// 		// Index all music libraries
+// 		for _, musicLibConfig := range config.Config.MusicLibraries {
+// 			mainIndex := BootstrapIndex(musicLibConfig.Name, musicLibConfig.Path)
+// 			global.IndexMany.Indexes[mainIndex.Id] = mainIndex
+// 		}
+// 	})()
+// }
+
 // Async index population (to prevent blocking the server)
 func BootstrapIndex(name, dir string) *Index {
 	// Populate the index
