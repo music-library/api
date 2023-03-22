@@ -2,8 +2,10 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/go-co-op/gocron"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -56,7 +58,13 @@ func main() {
 	// Setup the router
 	api.ApiRoutes(app)
 
-	indexer.IndexAllLibraries()
+	// Index all libraries on startup.
+	// Setup CRON job to reindex libraries periodically.
+	schedule := gocron.NewScheduler(time.UTC)
+	schedule.Every(3).Hours().Do(func() {
+		indexer.IndexAllLibraries()
+	})
+	schedule.StartAsync()
 
 	// Listen
 	log.Info("music-api server listening on " + ListenAddr())
