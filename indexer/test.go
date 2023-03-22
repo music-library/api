@@ -3,12 +3,29 @@ package indexer
 import (
 	"fmt"
 
+	"github.com/gosimple/slug"
 	"github.com/icrowley/fake"
+	"gitlab.com/music-library/music-api/config"
 )
 
-func TestGenerateIndex(count uint64) *Index {
+func TestGenerateIndexMany(names []string, count uint64) *IndexMany {
+	indexMany := IndexMany{
+		DefaultKey: names[0],
+		Indexes:    make(map[string]*Index),
+	}
+
+	for _, name := range names {
+		indexMany.Indexes[name] = TestGenerateIndex(name, count)
+	}
+
+	return &indexMany
+}
+
+func TestGenerateIndex(name string, count uint64) *Index {
 	index := Index{
-		Name:      "test",
+		Id:        slug.Make(name),
+		Name:      slug.Make(name),
+		Libraries: config.Config.MusicLibraries,
 		Tracks:    make([]*IndexTrack, 0, count),
 		TracksKey: make(map[string]int, count),
 	}

@@ -10,8 +10,6 @@ var IndexMany = indexer.IndexMany{
 	Indexes:    make(map[string]*indexer.Index),
 }
 
-var Index = indexer.GetNewIndex("main")
-
 var IndexNgram = ngram.NgramIndex{
 	NgramMap:   make(map[string]map[int]*ngram.IndexValue),
 	IndexesMap: make(map[int]*ngram.IndexValue),
