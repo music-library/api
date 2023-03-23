@@ -23,7 +23,7 @@ for (const key in metadata.tracks) {
 	const legacyTrack = metadataLegacy.find(t => t.metadata.album === track.metadata.album && t.metadata.album_artist === track.metadata.album_artist && t.metadata.artist === track.metadata.artist && t.metadata.title === track.metadata.title);
 	if (legacyTrack) {
 		console.log(`Matched: ${artist} - ${title}`);
-		track.metadata.duration = legacyTrack.metadata.duration ? Math.floor(legacyTrack.metadata.duration / 1000) : -1;
+		track.metadata.duration = Math.floor(legacyTrack.metadata.duration) || 0;
 		track.stats = { ...legacyTrack.stats };
 	}
 
