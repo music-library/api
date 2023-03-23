@@ -10,7 +10,7 @@ RUN task build
 
 # production environment
 FROM alpine:3.16.0
-RUN apk add vips-dev
+RUN apk add vips-tools mediainfo
 COPY --from=build /app/bin /app
 WORKDIR /app
 EXPOSE 80

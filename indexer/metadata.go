@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/bytedance/sonic"
@@ -57,11 +58,11 @@ func GetEmptyMetadata() *Metadata {
 	}
 }
 
-func getRawMetadata(filePath string) tag.Metadata {
+func initRawMetadataFromGoLib(filePath string) tag.Metadata {
 	file, fileErr := os.Open(filePath)
 
 	if fileErr != nil {
-		log.Error("index/metadata failed to open file " + filePath)
+		log.Error("index/metadata/GoLib failed to open file " + filePath)
 	}
 
 	defer file.Close()
@@ -69,83 +70,150 @@ func getRawMetadata(filePath string) tag.Metadata {
 	meta, err := tag.ReadFrom(io.ReadSeeker(file))
 
 	if err != nil {
-		log.Error("index/metadata failed to extract metadata from " + filePath)
+		log.Error("index/metadata/GoLib failed to extract metadata from " + filePath)
+	}
+
+	return meta
+}
+
+// Extract metadata from file using Go lib.
+//
+// @Note: Doesn't support duration.
+func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
+	meta := initRawMetadataFromGoLib(filePath)
+
+	trackNo, _ := meta.Track()
+	baseMeta.Track = trackNo
+	baseMeta.Title = meta.Title()
+	baseMeta.Artist = meta.Artist()
+	baseMeta.AlbumArtist = meta.AlbumArtist()
+	baseMeta.Album = meta.Album()
+	baseMeta.Year = fmt.Sprint(meta.Year())
+	baseMeta.Genre = meta.Genre()
+	baseMeta.Composer = meta.Composer()
+
+	// @Note - Duration is not supported by dhowden/tag
+	// baseMeta.Duration = meta.Duration()
+
+	return baseMeta
+}
+
+// Extract metadata from file using *external* CLI tool.
+//
+// @Note: Supports duration. Seems to be ~10x slower than Go lib.
+func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metadata, error) {
+	mediainfoJSON, err := exec.Command("mediainfo", "--Output=JSON", filePath).CombinedOutput()
+
+	if err != nil {
+		log.Error("index/metadata/CLI failed to extract metadata from " + filePath + " err: " + err.Error())
+		return baseMeta, err
+	}
+
+	mediainfo := struct {
+		Media struct {
+			Track []struct {
+				Track       string `json:"Track_Position"`
+				Title       string `json:"Title"`
+				Artist      string `json:"Performer"`
+				AlbumArtist string `json:"Album_Performer"`
+				Album       string `json:"Album"`
+				Year        string `json:"Recorded_Date"`
+				Genre       string `json:"Genre"`
+				Composer    string `json:"Composer"`
+				Duration    string `json:"Duration"`
+			} `json:"track"`
+		} `json:"media"`
+	}{}
+
+	// Parse JSON
+	err = sonic.Unmarshal(mediainfoJSON, &mediainfo)
+
+	if err != nil {
+		log.Error("index/metadata/CLI failed to unmarshal json response" + filePath + " err: " + err.Error())
+		return baseMeta, err
+	}
+
+	track := mediainfo.Media.Track[0]
+	durationFloat, _ := strconv.ParseFloat(track.Duration, 32)
+	trackNo, _ := strconv.Atoi(strings.TrimLeft(track.Track, "0")) // Trim leading zeros
+	baseMeta.Track = trackNo
+	baseMeta.Title = track.Title
+	baseMeta.Artist = track.Artist
+	baseMeta.AlbumArtist = track.AlbumArtist
+	baseMeta.Album = track.Album
+	baseMeta.Year = track.Year
+	baseMeta.Genre = track.Genre
+	baseMeta.Composer = track.Composer
+	baseMeta.Duration = int(durationFloat)
+
+	return baseMeta, nil
+}
+
+func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
+	if len(meta.Title) == 0 {
+		// Use filename as title if no title is found
+		meta.Title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+
+		// Attempt to clean up title (worth a shot)
+		meta.Title = strings.ReplaceAll(meta.Title, "_", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, "-", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, ".", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, "   ", " ")
+		meta.Title = strings.ReplaceAll(meta.Title, "  ", " ")
+		meta.Title = cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Title))
+	}
+
+	if len(meta.Artist) == 0 {
+		meta.Artist = "~"
+	}
+
+	if len(meta.AlbumArtist) == 0 {
+		meta.AlbumArtist = "~"
+	}
+
+	if len(meta.Album) == 0 {
+		meta.Album = "~"
+	}
+
+	if len(meta.Year) < 4 || len(meta.Year) > 4 {
+		meta.Year = "~"
+	}
+
+	if len(meta.Year) == 4 {
+		meta.Decade = meta.Year[:3] + "0"
+	}
+
+	if len(meta.Genre) == 0 {
+		meta.Genre = "~"
+	} else {
+		meta.Genre = cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Genre))
+	}
+
+	if len(meta.Composer) == 0 {
+		meta.Composer = "~"
 	}
 
 	return meta
 }
 
 func GetTrackMetadata(filePath string) *Metadata {
-	baseMeta := GetEmptyMetadata()
-	meta := getRawMetadata(filePath)
+	meta := GetEmptyMetadata()
+	err := error(nil)
 
-	track, _ := meta.Track()
-	baseMeta.Track = track
+	meta, err = getRawMetadataFromMediaInfoCli(meta, filePath)
 
-	title := meta.Title()
-	if len(title) == 0 {
-		// Use filename as title if no title is found
-		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
-
-		// Attempt to clean up title (worth a shot)
-		title = strings.ReplaceAll(title, "_", " ")
-		title = strings.ReplaceAll(title, "-", " ")
-		title = strings.ReplaceAll(title, ".", " ")
-		title = strings.ReplaceAll(title, "   ", " ")
-		title = strings.ReplaceAll(title, "  ", " ")
-		title = cases.Title(language.AmericanEnglish).String(strings.ToLower(title))
-	}
-	baseMeta.Title = title
-
-	artist := meta.Artist()
-	if len(artist) == 0 {
-		artist = "~"
-	}
-	baseMeta.Artist = artist
-
-	albumArtist := meta.AlbumArtist()
-	if len(albumArtist) == 0 {
-		albumArtist = "~"
-	}
-	baseMeta.AlbumArtist = albumArtist
-
-	album := meta.Album()
-	if len(album) == 0 {
-		album = "~"
-	}
-	baseMeta.Album = album
-
-	year := fmt.Sprint(meta.Year())
-	if len(year) < 4 {
-		year = "~"
-	}
-	baseMeta.Year = year
-
-	if len(year) == 4 {
-		baseMeta.Decade = year[:3] + "0"
+	if err != nil {
+		meta = getRawMetadataFromGoLib(meta, filePath)
 	}
 
-	genre := cases.Title(language.AmericanEnglish).String(strings.ToLower(meta.Genre()))
-	if len(genre) == 0 {
-		genre = "~"
-	}
-	baseMeta.Genre = genre
+	meta = refineRawMetadata(meta, filePath)
 
-	composer := meta.Composer()
-	if len(composer) == 0 {
-		composer = "~"
-	}
-	baseMeta.Composer = composer
-
-	// @TODO
-	// baseMeta.Duration = meta.Duration()
-
-	return baseMeta
+	return meta
 }
 
 // Returns cover image as byte array, and mime type
 func GetTrackCover(filePath string) ([]byte, string) {
-	meta := getRawMetadata(filePath)
+	meta := initRawMetadataFromGoLib(filePath)
 
 	picture := meta.Picture()
 

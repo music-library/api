@@ -1,8 +1,10 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
-	"gitlab.com/music-library/music-api/global"
+	"gitlab.com/music-library/music-api/indexer"
 )
 
 func HealthHandler(c *fiber.Ctx) error {
@@ -10,10 +12,13 @@ func HealthHandler(c *fiber.Ctx) error {
 	status := 200
 	ok := true
 
-	if len(global.Index.Tracks) == 0 {
-		message = "track index is empty"
-		status = 500
-		ok = false
+	for _, index := range indexer.MusicLibIndex.Indexes {
+		if len(index.Tracks) == 0 {
+			message = fmt.Sprintf("%s track index is empty", index.Name)
+			status = 500
+			ok = false
+			break
+		}
 	}
 
 	return c.Status(status).JSON(fiber.Map{

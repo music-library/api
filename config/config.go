@@ -11,6 +11,8 @@ type Configuration struct {
 	// Internal
 	LogFile         string    `json:"log_file"`
 	LogLevel        string    `json:"log_level"`
+	AuthPassword    string    `json:"auth_password"`
+	ReIndexHours    string    `json:"re_index_hours"`
 	ServerStartTime time.Time `json:"server_start_time"`
 	// Music Library
 	DataDir      string `json:"data_dir"`
@@ -44,6 +46,8 @@ func GetConfig() Configuration {
 		// Internal
 		LogFile:         GetEnv("LOG_FILE", fmt.Sprintf("%s/music-api.log", DATA_DIR)),
 		LogLevel:        GetEnv("LOG_LEVEL", "info"),
+		AuthPassword:    GetEnv("AUTH_PASSWORD", "lol"),
+		ReIndexHours:    GetEnv("REINDEX_HOURS", "12"),
 		ServerStartTime: time.Now(),
 		// Music Library
 		DataDir:      DATA_DIR,

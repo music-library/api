@@ -10,13 +10,24 @@ import (
 	"time"
 
 	"github.com/gosimple/slug"
+	"github.com/hmerritt/go-ngram"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/config"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-// TODO: Implement this
+var MusicLibIndex = IndexMany{
+	DefaultKey: "main",
+	Indexes:    make(map[string]*Index),
+}
+
+var IndexNgram = ngram.NgramIndex{
+	NgramMap:   make(map[string]map[int]*ngram.IndexValue),
+	IndexesMap: make(map[int]*ngram.IndexValue),
+	Ngram:      3,
+}
+
 type IndexMany struct {
 	// Default (fallback) `Indexes` map key.
 	DefaultKey string

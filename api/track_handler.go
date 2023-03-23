@@ -5,14 +5,13 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
-
-	"gitlab.com/music-library/music-api/global"
+	"gitlab.com/music-library/music-api/indexer"
 )
 
 func TrackHandler(c *fiber.Ctx) error {
 	libId := c.Locals("libId").(string)
 	trackId := strings.ToLower(c.Params("id"))
-	track, ok := global.IndexMany.Indexes[libId].Get(trackId)
+	track, ok := indexer.MusicLibIndex.Indexes[libId].Get(trackId)
 
 	if !ok {
 		log.Error("http/track/" + trackId + " track does not exist")

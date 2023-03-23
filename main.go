@@ -2,8 +2,10 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/go-co-op/gocron"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -11,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api"
 	"gitlab.com/music-library/music-api/config"
-	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 	"gitlab.com/music-library/music-api/version"
 )
@@ -57,14 +58,13 @@ func main() {
 	// Setup the router
 	api.ApiRoutes(app)
 
-	// Async index population (to prevent blocking the server)
-	go (func() {
-		// Index all music libraries
-		for _, musicLibConfig := range config.Config.MusicLibraries {
-			mainIndex := indexer.BootstrapIndex(musicLibConfig.Name, musicLibConfig.Path)
-			global.IndexMany.Indexes[mainIndex.Id] = mainIndex
-		}
-	})()
+	// Index all libraries on startup.
+	// Setup CRON job to reindex libraries periodically.
+	schedule := gocron.NewScheduler(time.UTC)
+	schedule.Every(config.Config.ReIndexHours).Hours().Do(func() {
+		indexer.IndexAllLibraries()
+	})
+	schedule.StartAsync()
 
 	// Listen
 	log.Info("music-api server listening on " + ListenAddr())

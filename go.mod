@@ -4,11 +4,14 @@ go 1.18
 
 require (
 	github.com/cosmtrek/air v1.41.0
+	github.com/go-co-op/gocron v1.19.0
+	github.com/go-task/task/v3 v3.22.0
 	github.com/gofiber/fiber/v2 v2.42.0
+	github.com/gosimple/slug v1.13.1
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/mitchellh/gox v1.0.1
 	github.com/sirupsen/logrus v1.9.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 )
 
 require (
@@ -16,10 +19,8 @@ require (
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
-	github.com/go-task/task/v3 v3.22.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gosimple/slug v1.13.1 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
@@ -27,6 +28,7 @@ require (
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect

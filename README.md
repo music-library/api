@@ -25,6 +25,7 @@ API for the Music-Library project, written in Go.
         -   [ ] UI changes to select/swap library
 -   [x] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
+-   [ ] `/reindex/:password` - Refresh all metadata (without restarting the server)
 -   [ ] Get average + primary color of album cover
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
     -   [ ] Active user count (existing functionality)

@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/music-library/music-api/global"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
@@ -19,6 +18,7 @@ func TestHealthHandler(t *testing.T) {
 		method             string // HTTP method
 		expectedStatusCode int    // Expected HTTP status code
 		tracksCount        uint64
+		indexNames         []string
 		res                fiber.Map
 	}{
 		// Add test cases here
@@ -28,8 +28,9 @@ func TestHealthHandler(t *testing.T) {
 			method:             "GET",
 			expectedStatusCode: 500,
 			tracksCount:        0,
+			indexNames:         []string{"empty", "empty2", "empty3"},
 			res: fiber.Map{
-				"message": "track index is empty",
+				"message": "empty track index is empty",
 				"ok":      false,
 			},
 		},
@@ -39,6 +40,7 @@ func TestHealthHandler(t *testing.T) {
 			method:             "GET",
 			expectedStatusCode: 200,
 			tracksCount:        1,
+			indexNames:         []string{"main", "second", "third"},
 			res: fiber.Map{
 				"message": "ok",
 				"ok":      true,
@@ -50,6 +52,7 @@ func TestHealthHandler(t *testing.T) {
 			method:             "GET",
 			expectedStatusCode: 200,
 			tracksCount:        456,
+			indexNames:         []string{"main", "456", "rand456"},
 			res: fiber.Map{
 				"message": "ok",
 				"ok":      true,
@@ -69,9 +72,8 @@ func TestHealthHandler(t *testing.T) {
 
 	// Iterate through single test cases
 	for _, test := range tests {
-		index := indexer.TestGenerateIndex(test.tracksCount)
-		global.Index.Tracks = index.Tracks
-		global.Index.TracksKey = index.TracksKey
+		indexMany := *indexer.TestGenerateIndexMany(test.indexNames, test.tracksCount)
+		indexer.MusicLibIndex = indexMany
 
 		// Create a new http request with the route from the test case
 		req := httptest.NewRequest(test.method, test.route, nil)
