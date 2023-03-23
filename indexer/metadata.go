@@ -105,7 +105,7 @@ func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metad
 	mediainfoJSON, err := exec.Command("mediainfo", "--Output=JSON", filePath).CombinedOutput()
 
 	if err != nil {
-		log.Error("index/metadata/CLI failed to extract metadata from " + filePath + " err: " + err.Error())
+		log.Error("index/metadata/CLI failed to extract mediainfo metadata: `" + filePath + "`")
 		return baseMeta, err
 	}
 
@@ -128,8 +128,8 @@ func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metad
 	// Parse JSON
 	err = sonic.Unmarshal(mediainfoJSON, &mediainfo)
 
-	if err != nil {
-		log.Error("index/metadata/CLI failed to unmarshal json response" + filePath + " err: " + err.Error())
+	if err != nil || len(mediainfo.Media.Track) == 0 {
+		log.Error("index/metadata/CLI failed to unmarshal mediainfo json: `" + filePath + "`")
 		return baseMeta, err
 	}
 

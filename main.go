@@ -49,6 +49,7 @@ func main() {
 
 	// Middleware
 	app.Use(cors.New())
+	app.Use("/ws", api.WebsocketUpgradeMiddleware)
 	app.Use(recover.New()) // Prevent crashes due to panics
 
 	if config.Config.LogLevel == "debug" {

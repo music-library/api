@@ -19,10 +19,10 @@ API for the Music-Library project, written in Go.
 
 -   [x] One instance, handle multiple libraries
     -   [x] Middleware to handle library selection (via `X-Library` header)
-    -   [ ] Frontend to select library
-        -   [ ] Default library needs to be set so FE is never blocked on what to load
+    -   [x] Frontend to select library
+        -   [x] Default library needs to be set so FE is never blocked on what to load
         -   [x] Available libraries need to be sent to the FE
-        -   [ ] UI changes to select/swap library
+        -   [x] UI changes to select/swap library
 -   [x] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
 -   [x] `/reindex/:password` - Refresh all metadata (without restarting the server)
