@@ -61,7 +61,7 @@ func main() {
 	// Index all libraries on startup.
 	// Setup CRON job to reindex libraries periodically.
 	schedule := gocron.NewScheduler(time.UTC)
-	schedule.Every(3).Hours().Do(func() {
+	schedule.Every(config.Config.ReIndexHours).Hours().Do(func() {
 		indexer.IndexAllLibraries()
 	})
 	schedule.StartAsync()
