@@ -4,6 +4,8 @@
 package api
 
 import (
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,6 +39,7 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
+			go h.BroadcastConnectionCount()
 			client.remoteAddr = client.conn.RemoteAddr().String()
 			log.Debug("ws/hub registering client", client.remoteAddr)
 		case client := <-h.unregister:
@@ -45,6 +48,7 @@ func (h *Hub) Run() {
 				delete(h.clients, client)
 				close(client.send)
 			}
+			go h.BroadcastConnectionCount()
 		case message := <-h.broadcast:
 			log.Debug("ws/hub broadcasting message", string(message))
 			for client := range h.clients {
@@ -57,4 +61,8 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+func (h *Hub) BroadcastConnectionCount() {
+	h.broadcast <- []byte(fmt.Sprintf("There are %d clients connected", len(h.clients)))
 }
