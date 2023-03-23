@@ -13,7 +13,7 @@ API for the Music-Library project, written in Go.
 -   [x] `/track/:id/cover/:size?`
 -   [x] Extract metadata
 -   [x] Cache metadata
--   [ ] Re-index library every X hours
+-   [x] Re-index library every X hours
 
 ### Additional
 
@@ -25,7 +25,7 @@ API for the Music-Library project, written in Go.
         -   [ ] UI changes to select/swap library
 -   [x] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
--   [ ] `/reindex/:password` - Refresh all metadata (without restarting the server)
+-   [x] `/reindex/:password` - Refresh all metadata (without restarting the server)
 -   [ ] Get average + primary color of album cover
 -   [ ] [socket.io](https://github.com/ambelovsky/gosf)
     -   [ ] Active user count (existing functionality)

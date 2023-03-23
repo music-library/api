@@ -45,7 +45,7 @@ func BootstrapIndex(name, dir string) *Index {
 			// Check if track metadata is cached
 			cachedTrackIndex, isCached := indexCache.TracksKey[indexTrack.Id]
 
-			if isCached {
+			if isCached && indexCache.Tracks[cachedTrackIndex].Metadata.Title != "(unknown)" {
 				cachedTrack := indexCache.Tracks[cachedTrackIndex]
 				indexTrack.IdAlbum = cachedTrack.IdAlbum
 				indexTrack.Metadata = cachedTrack.Metadata
