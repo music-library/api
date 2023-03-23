@@ -11,47 +11,48 @@ import (
 // clients.
 type Hub struct {
 	// Registered clients.
-	Clients map[*Client]bool
+	clients map[*Client]bool
 
 	// Inbound messages from the clients.
-	Broadcast chan []byte
+	broadcast chan []byte
 
 	// Register requests from the clients.
-	Register chan *Client
+	register chan *Client
 
 	// Unregister requests from clients.
-	Unregister chan *Client
+	unregister chan *Client
 }
 
 func newHub() *Hub {
 	return &Hub{
-		Clients:    make(map[*Client]bool),
-		Broadcast:  make(chan []byte),
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
+		clients:    make(map[*Client]bool),
+		broadcast:  make(chan []byte),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
 	}
 }
 
 func (h *Hub) Run() {
 	for {
 		select {
-		case client := <-h.Register:
-			log.Debug("Registering client", client.conn.RemoteAddr().String())
-			h.Clients[client] = true
-		case client := <-h.Unregister:
-			log.Debug("Unregistering client", client.conn.RemoteAddr().String())
-			if _, ok := h.Clients[client]; ok {
-				delete(h.Clients, client)
+		case client := <-h.register:
+			h.clients[client] = true
+			client.remoteAddr = client.conn.RemoteAddr().String()
+			log.Debug("Registering client", client.remoteAddr)
+		case client := <-h.unregister:
+			log.Debug("Unregistering client", client.remoteAddr)
+			if _, ok := h.clients[client]; ok {
+				delete(h.clients, client)
 				close(client.send)
 			}
-		case message := <-h.Broadcast:
-			log.Debug("Broadcasting message", string(message))
-			for client := range h.Clients {
+		case message := <-h.broadcast:
+			log.Debug("broadcasting message", string(message))
+			for client := range h.clients {
 				select {
 				case client.send <- message:
 				default:
 					close(client.send)
-					delete(h.Clients, client)
+					delete(h.clients, client)
 				}
 			}
 		}

@@ -20,7 +20,7 @@ func WebsocketUpgradeMiddleware(c *fiber.Ctx) error {
 
 func WebsocketHandler(c *websocket.Conn) {
 	client := &Client{hub: WsHub, conn: c, send: make(chan []byte, 256)}
-	client.hub.Register <- client
+	client.hub.register <- client
 
 	go client.writePump()
 	client.readPump()
