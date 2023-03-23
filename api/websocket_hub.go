@@ -38,15 +38,15 @@ func (h *Hub) Run() {
 		case client := <-h.register:
 			h.clients[client] = true
 			client.remoteAddr = client.conn.RemoteAddr().String()
-			log.Debug("Registering client", client.remoteAddr)
+			log.Debug("ws/hub registering client", client.remoteAddr)
 		case client := <-h.unregister:
-			log.Debug("Unregistering client", client.remoteAddr)
+			log.Debug("ws/hub unregistering client", client.remoteAddr)
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
 			}
 		case message := <-h.broadcast:
-			log.Debug("broadcasting message", string(message))
+			log.Debug("ws/hub broadcasting message", string(message))
 			for client := range h.clients {
 				select {
 				case client.send <- message:
