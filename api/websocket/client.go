@@ -77,12 +77,13 @@ func (c *Client) ReadPump() {
 			continue
 		}
 
-		log.WithField("wsEvent", messageEvent.Event).Debug("ws/client incomming message")
+		log.WithField("wsEvent", messageEvent.Type).Debug("ws/client incomming message")
 		c.Hub.Inbound <- NewClientEvent(c, messageEvent)
 	}
 }
 
 // Send a message to the websocket connection
+// @TODO: Maybe make this a chan again?
 func (c *Client) Send(message []byte) error {
 	c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 
@@ -91,7 +92,9 @@ func (c *Client) Send(message []byte) error {
 		return err
 	}
 
-	w.Write(message)
+	if _, err := w.Write(message); err != nil {
+		return err
+	}
 
 	if err := w.Close(); err != nil {
 		return err

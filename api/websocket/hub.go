@@ -54,7 +54,7 @@ func (h *Hub) Run() {
 		case client := <-h.Register:
 			h.Clients[client] = true
 			client.StartTime = time.Now().Unix()
-			go h.EmitConnectionCount()
+			h.onCallInboundEventHandlers(NewClientEvent(client, NewEvent(WsConnect, nil)))
 			log.WithField("remoteAddr", client.GetIp()).Debug("ws/hub registering client")
 
 			// Unregister client
@@ -64,18 +64,14 @@ func (h *Hub) Run() {
 				client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				client.Conn.Close()
 				delete(h.Clients, client)
-				go h.EmitConnectionCount()
+				h.onCallInboundEventHandlers(NewClientEvent(client, NewEvent(WsDisconnect, nil)))
 				continue
 			}
 
 			// Inbound messages from clients
 		case event := <-h.Inbound:
 			// Call user defined handlers for this event
-			if handlers, ok := h.InboundEventHandlers[event.Event.Event]; ok {
-				for _, handler := range handlers {
-					handler(h, event)
-				}
-			}
+			h.onCallInboundEventHandlers(event)
 
 			// Ping all clients periodically to check if they are still connected.
 			// Disconnect them if they do not respond before the `writeWait` timeout.
@@ -95,7 +91,18 @@ func (h *Hub) On(event string, handlers ...func(*Hub, *ClientEvent)) {
 	h.InboundEventHandlers[event] = append(h.InboundEventHandlers[event], handlers...)
 }
 
-// Emit sends an event to all connected clients
+// Internal method to call all handlers for an event
+func (h *Hub) onCallInboundEventHandlers(clientEvent *ClientEvent) {
+	if handlers, ok := h.InboundEventHandlers[clientEvent.Event.Type]; ok {
+		for _, handler := range handlers {
+			handler(h, clientEvent)
+		}
+	}
+}
+
+// Emit sends an event to all connected clients.
+//
+// If clients are specified, the event will be sent only to those clients.
 func (h *Hub) Emit(event *Event, clients ...*Client) error {
 	msg, err := event.ToJSON()
 
@@ -103,7 +110,7 @@ func (h *Hub) Emit(event *Event, clients ...*Client) error {
 		return err
 	}
 
-	log.WithField("wsEvent", event.Event).Debug("ws/hub broadcasting message")
+	log.WithField("wsEvent", event.Type).Debug("ws/hub broadcasting message")
 
 	// Emit to specific clients
 	if len(clients) > 0 {

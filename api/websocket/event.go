@@ -6,14 +6,14 @@ import (
 
 // Basic event type for every websocket message
 type Event struct {
-	Event string      `json:"event"`
-	Data  interface{} `json:"data"`
+	Type string      `json:"type"`
+	Data interface{} `json:"data"`
 }
 
 func NewEvent(event string, data interface{}) *Event {
 	return &Event{
-		Event: event,
-		Data:  data,
+		Type: event,
+		Data: data,
 	}
 }
 
@@ -43,6 +43,7 @@ func (e *Event) ToString() (string, error) {
 
 // Internal websocket events
 var (
-	// Event for when a client connects
-	WsEventConnectionCount = "ws:connectionCount"
+	WsConnect              = "ws:connect"         // On client connect
+	WsDisconnect           = "ws:disconnect"      // On client connect disconnect
+	WsEventConnectionCount = "ws:connectionCount" // Total number of connected clients
 )
