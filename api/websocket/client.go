@@ -58,12 +58,10 @@ func (c *Client) ReadPump() {
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Error("ws/client/read: ", err)
+				c.Hub.Unregister <- c
 			}
 			break
 		}
-
-		// message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 
 		c.Hub.Broadcast <- message
 	}
