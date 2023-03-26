@@ -20,6 +20,7 @@ import (
 var MusicLibIndex = IndexMany{
 	DefaultKey: "main",
 	Indexes:    make(map[string]*Index),
+	Socket:     NewSocket(),
 }
 
 var IndexNgram = ngram.NgramIndex{
@@ -33,6 +34,8 @@ type IndexMany struct {
 	DefaultKey string
 	// Store multiple indexes. An index is the meta needed for an entire music library.
 	Indexes map[string]*Index
+	// Websocket state
+	Socket *Socket
 }
 
 // Tracks as array

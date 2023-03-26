@@ -105,7 +105,7 @@ func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metad
 	mediainfoJSON, err := exec.Command("mediainfo", "--Output=JSON", filePath).CombinedOutput()
 
 	if err != nil {
-		log.Error("index/metadata/CLI failed to extract metadata from " + filePath + " err: " + err.Error())
+		log.Error("index/metadata/CLI failed to extract mediainfo metadata: `" + filePath + "`")
 		return baseMeta, err
 	}
 
@@ -128,22 +128,26 @@ func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metad
 	// Parse JSON
 	err = sonic.Unmarshal(mediainfoJSON, &mediainfo)
 
-	if err != nil {
-		log.Error("index/metadata/CLI failed to unmarshal json response" + filePath + " err: " + err.Error())
+	if err != nil || len(mediainfo.Media.Track) == 0 {
+		log.Error("index/metadata/CLI failed to unmarshal mediainfo json: `" + filePath + "`")
 		return baseMeta, err
 	}
 
 	track := mediainfo.Media.Track[0]
 	durationFloat, _ := strconv.ParseFloat(track.Duration, 32)
-	trackNo, _ := strconv.Atoi(strings.TrimLeft(track.Track, "0")) // Trim leading zeros
-	baseMeta.Track = trackNo
-	baseMeta.Title = track.Title
-	baseMeta.Artist = track.Artist
-	baseMeta.AlbumArtist = track.AlbumArtist
-	baseMeta.Album = track.Album
-	baseMeta.Year = track.Year
-	baseMeta.Genre = track.Genre
-	baseMeta.Composer = track.Composer
+
+	if len(baseMeta.AlbumArtist) <= 1 {
+		trackNo, _ := strconv.Atoi(strings.TrimLeft(track.Track, "0")) // Trim leading zeros
+		baseMeta.Track = trackNo
+		baseMeta.Title = track.Title
+		baseMeta.Artist = track.Artist
+		baseMeta.AlbumArtist = track.AlbumArtist
+		baseMeta.Album = track.Album
+		baseMeta.Year = track.Year
+		baseMeta.Genre = track.Genre
+		baseMeta.Composer = track.Composer
+	}
+
 	baseMeta.Duration = int(durationFloat)
 
 	return baseMeta, nil
@@ -198,12 +202,11 @@ func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
 
 func GetTrackMetadata(filePath string) *Metadata {
 	meta := GetEmptyMetadata()
-	err := error(nil)
 
-	meta, err = getRawMetadataFromMediaInfoCli(meta, filePath)
+	meta = getRawMetadataFromGoLib(meta, filePath)
 
-	if err != nil {
-		meta = getRawMetadataFromGoLib(meta, filePath)
+	if meta.Duration == 0 {
+		meta, _ = getRawMetadataFromMediaInfoCli(meta, filePath)
 	}
 
 	meta = refineRawMetadata(meta, filePath)

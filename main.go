@@ -49,6 +49,7 @@ func main() {
 
 	// Middleware
 	app.Use(cors.New())
+	app.Use("/ws", api.WebsocketUpgradeMiddleware)
 	app.Use(recover.New()) // Prevent crashes due to panics
 
 	if config.Config.LogLevel == "debug" {
@@ -57,6 +58,8 @@ func main() {
 
 	// Setup the router
 	api.ApiRoutes(app)
+	api.WebsocketEventHanders(api.WsHub)
+	go api.WsHub.Run() // Start websocket
 
 	// Index all libraries on startup.
 	// Setup CRON job to reindex libraries periodically.
