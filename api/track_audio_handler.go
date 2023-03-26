@@ -31,10 +31,6 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		return Error(c, 500, "track failed to play")
 	}
 
-	// Update track stats
-	track.Stats.TimesPlayed += 1
-	track.Stats.LastPlayed = time.Now().Unix()
-
 	mimeType := mime.TypeByExtension(filepath.Ext(track.Path))
 
 	if mimeType == "" || mimeType == "audio/x-flac" {
@@ -47,6 +43,14 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 
 	// Accept range requests
 	reqRange := c.Get(fiber.HeaderRange)
+
+	// Only increment times played at the initial request (not range requests)
+	if reqRange == "" || reqRange == "bytes=0-" {
+		// Update track stats
+		track.Stats.TimesPlayed += 1
+		track.Stats.LastPlayed = time.Now().Unix()
+	}
+
 	if reqRange != "" {
 		parts := strings.Split(strings.Replace(reqRange, "bytes=", "", 1), "-")
 		partialstart := parts[0]
@@ -83,5 +87,6 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		return c.Status(206).Send(buffer[:bytesread])
 	}
 
+	// @TODO: use `c.SendStream()`
 	return c.SendFile(track.Path, false)
 }
