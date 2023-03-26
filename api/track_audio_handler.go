@@ -24,12 +24,12 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		return Error(c, 404, "track does not exist")
 	}
 
-	trackFileInfo, err := os.Stat(track.Path)
-
+	// Open track file for reading
+	file, totalSize, err := openTrack(trackId, track.Path)
 	if err != nil {
-		log.Error("http/track/" + trackId + "/audio track failed to play")
 		return Error(c, 500, "track failed to play")
 	}
+	defer file.Close()
 
 	mimeType := mime.TypeByExtension(filepath.Ext(track.Path))
 
@@ -37,7 +37,6 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		mimeType = "audio/flac"
 	}
 
-	totalSize := trackFileInfo.Size()
 	c.Set(fiber.HeaderContentType, mimeType)
 	c.Set(fiber.HeaderContentLength, fmt.Sprint(totalSize))
 
@@ -66,12 +65,6 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 			end = totalSize - 1
 		}
 
-		file, err := os.Open(track.Path)
-		if err != nil {
-			log.Error("http/track/" + trackId + "/audio track file failed to open")
-		}
-		defer file.Close()
-
 		chunksize := end - start + 1
 		buffer := make([]byte, chunksize)
 		bytesread, err := file.ReadAt(buffer, start)
@@ -87,6 +80,24 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		return c.Status(206).Send(buffer[:bytesread])
 	}
 
-	// @TODO: use `c.SendStream()`
-	return c.SendFile(track.Path, false)
+	return c.SendFile(track.Path)
+}
+
+// Open track and get file size
+func openTrack(trackId, trackPath string) (*os.File, int64, error) {
+	file, err := os.Open(trackPath)
+
+	if err != nil {
+		log.Error("http/track/" + trackId + "/audio track file failed to open")
+		return nil, 0, err
+	}
+
+	fileStat, err := file.Stat()
+
+	if err != nil {
+		log.Error("http/track/" + trackId + "/audio track file failed to get file.stat")
+		return nil, 0, err
+	}
+
+	return file, fileStat.Size(), nil
 }
