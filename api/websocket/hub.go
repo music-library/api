@@ -49,16 +49,17 @@ func (h *Hub) Run() {
 			h.Clients[client] = true
 			client.StartTime = time.Now().Unix()
 			go h.EmitConnectionCount()
-			log.WithField("remoteAddr", client.GetIp()).Info("ws/hub registering client")
+			log.WithField("remoteAddr", client.GetIp()).Debug("ws/hub registering client")
 
 			// Unregister client
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
-				log.WithField("remoteAddr", client.GetIp()).WithField("duration", time.Since(time.Unix(client.StartTime, 0))).Info("ws/hub unregistering client")
+				log.WithField("remoteAddr", client.GetIp()).WithField("duration", time.Since(time.Unix(client.StartTime, 0))).Debug("ws/hub unregistering client")
 				client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				client.Conn.Close()
 				delete(h.Clients, client)
 				go h.EmitConnectionCount()
+				continue
 			}
 
 			// Inbound messages from clients
@@ -76,12 +77,10 @@ func (h *Hub) Run() {
 				}
 			}
 		}
-
 	}
 }
 
 // Emit sends an event to all connected clients
-// @TODO: Emit to specific clients
 func (h *Hub) Emit(event *Event, clients ...*Client) error {
 	msg, err := event.ToJSON()
 
@@ -91,17 +90,17 @@ func (h *Hub) Emit(event *Event, clients ...*Client) error {
 
 	log.WithField("wsEvent", event.Event).Debug("ws/hub broadcasting message")
 
-	// Emit to all clients
-	if len(clients) == 0 {
-		for client := range h.Clients {
+	// Emit to specific clients
+	if len(clients) > 0 {
+		for _, client := range clients {
 			client.Send(msg)
 		}
 
 		return nil
 	}
 
-	// Emit to specific clients
-	for _, client := range clients {
+	// Emit to all clients
+	for client := range h.Clients {
 		client.Send(msg)
 	}
 

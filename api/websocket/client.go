@@ -49,6 +49,27 @@ func NewClient(h *Hub, c *websocket.Conn) {
 	client.ReadPump()
 }
 
+// Read, parse, and pump messages from the websocket connection to the hub
+func (c *Client) ReadPump() {
+	for {
+		_, message, err := c.Conn.ReadMessage()
+
+		if err != nil {
+			break
+		}
+
+		messageEvent := &Event{}
+
+		if err := sonic.Unmarshal(message, messageEvent); err != nil {
+			log.WithField("remoteAddr", c.GetIp()).Debug("ws/client failed to unmarshal message")
+			continue
+		}
+
+		c.Hub.Inbound <- messageEvent
+	}
+}
+
+// Send a message to the websocket connection
 func (c *Client) Send(message []byte) error {
 	c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 
@@ -71,25 +92,15 @@ func (c *Client) Disconnect() {
 }
 
 func (c *Client) GetIp() string {
-	return c.Conn.RemoteAddr().String()
-}
-
-// Read, parse, and pump messages from the websocket connection to the hub.
-func (c *Client) ReadPump() {
-	for {
-		_, message, err := c.Conn.ReadMessage()
-
-		if err != nil {
-			break
-		}
-
-		messageEvent := &Event{}
-
-		if err := sonic.Unmarshal(message, messageEvent); err != nil {
-			log.WithField("remoteAddr", c.GetIp()).Debug("ws/client failed to unmarshal message")
-			continue
-		}
-
-		c.Hub.Inbound <- messageEvent
+	if c == nil || c.Conn == nil {
+		return ""
 	}
+
+	addr := c.Conn.RemoteAddr()
+
+	if addr == nil {
+		return ""
+	}
+
+	return addr.String()
 }
