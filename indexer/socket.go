@@ -21,6 +21,10 @@ func (s *Socket) GetOrCreateSession(userId string) *SocketSession {
 	return s.Sessions[userId]
 }
 
+func (s *Socket) RemoveSession(userId string) {
+	delete(s.Sessions, userId)
+}
+
 func (s *Socket) PlayingTracks() []string {
 	playingTracks := []string{}
 	cacheMap := make(map[string]bool)
