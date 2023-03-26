@@ -4,6 +4,8 @@
 package websocket
 
 import (
+	"time"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,25 +39,22 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
+			client.StartTime = time.Now().Unix()
 			go h.BroadcastConnectionCount()
-			client.RemoteAddr = client.Conn.RemoteAddr().String()
-			log.Debug("ws/hub registering client", client.RemoteAddr)
+			log.WithField("remoteAddr", client.GetIp()).Info("ws/hub registering client")
+
 		case client := <-h.Unregister:
-			log.Debug("ws/hub unregistering client", client.RemoteAddr)
 			if _, ok := h.Clients[client]; ok {
-				delete(h.Clients, client)
+				log.WithField("remoteAddr", client.GetIp()).WithField("connTime", time.Since(time.Unix(client.StartTime, 0))).Info("ws/hub unregistering client")
 				close(client.Send)
+				delete(h.Clients, client)
+				go h.BroadcastConnectionCount()
 			}
-			go h.BroadcastConnectionCount()
+
 		case message := <-h.Broadcast:
 			log.Debug("ws/hub broadcasting message", string(message))
 			for client := range h.Clients {
-				select {
-				case client.Send <- message:
-				default:
-					close(client.Send)
-					delete(h.Clients, client)
-				}
+				client.Send <- message
 			}
 		}
 	}

@@ -6,8 +6,6 @@ package websocket
 import (
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/gofiber/websocket/v2"
 )
 
@@ -35,7 +33,19 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	Send chan []byte
 
-	RemoteAddr string
+	StartTime int64
+}
+
+func NewClient(h *Hub, c *websocket.Conn) {
+	client := &Client{Hub: h, Conn: c, Send: make(chan []byte, 256)}
+	client.Hub.Register <- client
+
+	go client.ReadPump()
+	client.WritePump()
+}
+
+func (c *Client) GetIp() string {
+	return c.Conn.RemoteAddr().String()
 }
 
 // readPump pumps messages from the websocket connection to the hub.
