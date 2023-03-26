@@ -82,7 +82,7 @@ func (h *Hub) Run() {
 
 // Emit sends an event to all connected clients
 // @TODO: Emit to specific clients
-func (h *Hub) Emit(event *Event) error {
+func (h *Hub) Emit(event *Event, clients ...*Client) error {
 	msg, err := event.ToJSON()
 
 	if err != nil {
@@ -91,7 +91,17 @@ func (h *Hub) Emit(event *Event) error {
 
 	log.WithField("wsEvent", event.Event).Debug("ws/hub broadcasting message")
 
-	for client := range h.Clients {
+	// Emit to all clients
+	if len(clients) == 0 {
+		for client := range h.Clients {
+			client.Send(msg)
+		}
+
+		return nil
+	}
+
+	// Emit to specific clients
+	for _, client := range clients {
 		client.Send(msg)
 	}
 
