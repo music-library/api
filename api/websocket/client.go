@@ -30,20 +30,41 @@ type Client struct {
 	// The websocket connection.
 	Conn *websocket.Conn
 
-	// Buffered channel of outbound messages.
-	Send chan []byte
-
 	// Initial client connection time.
 	// Useful to calculate connection duration.
 	StartTime int64
 }
 
 func NewClient(h *Hub, c *websocket.Conn) {
-	client := &Client{Hub: h, Conn: c, Send: make(chan []byte, 256)}
+	client := &Client{Hub: h, Conn: c}
 	client.Hub.Register <- client
 
-	go client.ReadPump()
-	client.WritePump()
+	c.Conn.SetReadLimit(maxMessageSize)
+	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
+	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	client.ReadPump()
+}
+
+func (c *Client) Send(message []byte) error {
+	c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+
+	w, err := c.Conn.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return err
+	}
+
+	w.Write(message)
+
+	if err := w.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) Disconnect() {
+	c.Hub.Unregister <- c
 }
 
 func (c *Client) GetIp() string {
@@ -56,73 +77,18 @@ func (c *Client) GetIp() string {
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 func (c *Client) ReadPump() {
-	defer func() {
-		c.Hub.Unregister <- c
-		c.Conn.Close()
-	}()
-
-	c.Conn.SetReadLimit(maxMessageSize)
-	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	defer c.Disconnect()
 
 	for {
 		_, message, err := c.Conn.ReadMessage()
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				c.Hub.Unregister <- c
+				c.Disconnect()
 			}
 			break
 		}
 
-		c.Hub.Broadcast <- message
-	}
-}
-
-// writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
-func (c *Client) WritePump() {
-	ticker := time.NewTicker(pingPeriod)
-
-	defer func() {
-		ticker.Stop()
-		c.Conn.Close()
-	}()
-
-	for {
-		select {
-		case message, ok := <-c.Send:
-			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if !ok {
-				// The hub closed the channel.
-				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-
-			w, err := c.Conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return
-			}
-			w.Write(message)
-
-			// Add queued chat messages to the current websocket message.
-			n := len(c.Send)
-			for i := 0; i < n; i++ {
-				w.Write(<-c.Send)
-			}
-
-			if err := w.Close(); err != nil {
-				return
-			}
-
-		case <-ticker.C:
-			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return
-			}
-		}
+		c.Hub.Inbound <- message
 	}
 }
