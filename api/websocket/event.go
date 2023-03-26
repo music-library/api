@@ -36,3 +36,9 @@ func (e *Event) ToString() (string, error) {
 
 	return string(eventJSON), nil
 }
+
+// Internal websocket events
+var (
+	// Event for when a client connects
+	WsEventConnectionCount = "ws:connectionCount"
+)

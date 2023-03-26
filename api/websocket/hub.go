@@ -62,6 +62,6 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) BroadcastConnectionCount() {
-	event, _ := NewEvent("_ws:connCount", len(h.Clients)).ToJSON()
+	event, _ := NewEvent(WsEventConnectionCount, len(h.Clients)).ToJSON()
 	h.Broadcast <- event
 }
