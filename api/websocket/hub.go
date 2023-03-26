@@ -23,12 +23,12 @@ type Hub struct {
 	Unregister chan *Client
 
 	// Inbound messages from the clients
-	Inbound chan *Event
+	Inbound chan *ClientEvent
 
 	// User defined event handlers for specific incoming events.
 	//
 	// Use `On` method to register a handler for an event.
-	InboundEventHandlers map[string][]func(*Hub, *Event)
+	InboundEventHandlers map[string][]func(*Hub, *ClientEvent)
 }
 
 func NewHub() *Hub {
@@ -36,8 +36,8 @@ func NewHub() *Hub {
 		Clients:              make(map[*Client]bool),
 		Register:             make(chan *Client),
 		Unregister:           make(chan *Client),
-		Inbound:              make(chan *Event),
-		InboundEventHandlers: make(map[string][]func(*Hub, *Event)),
+		Inbound:              make(chan *ClientEvent),
+		InboundEventHandlers: make(map[string][]func(*Hub, *ClientEvent)),
 	}
 }
 
@@ -71,7 +71,7 @@ func (h *Hub) Run() {
 			// Inbound messages from clients
 		case event := <-h.Inbound:
 			// Call user defined handlers for this event
-			if handlers, ok := h.InboundEventHandlers[event.Event]; ok {
+			if handlers, ok := h.InboundEventHandlers[event.Event.Event]; ok {
 				for _, handler := range handlers {
 					handler(h, event)
 				}
@@ -91,7 +91,7 @@ func (h *Hub) Run() {
 }
 
 // Register handler(s) for an event
-func (h *Hub) On(event string, handlers ...func(*Hub, *Event)) {
+func (h *Hub) On(event string, handlers ...func(*Hub, *ClientEvent)) {
 	h.InboundEventHandlers[event] = append(h.InboundEventHandlers[event], handlers...)
 }
 

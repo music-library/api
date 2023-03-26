@@ -37,6 +37,11 @@ type Client struct {
 	StartTime int64
 }
 
+type ClientEvent struct {
+	Client *Client
+	Event  *Event
+}
+
 func NewClient(h *Hub, c *websocket.Conn) {
 	client := &Client{Hub: h, Conn: c}
 	client.Hub.Register <- client
@@ -47,6 +52,13 @@ func NewClient(h *Hub, c *websocket.Conn) {
 	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
 	client.ReadPump()
+}
+
+func NewClientEvent(c *Client, e *Event) *ClientEvent {
+	return &ClientEvent{
+		Client: c,
+		Event:  e,
+	}
 }
 
 // Read, parse, and pump messages from the websocket connection to the hub
@@ -66,7 +78,7 @@ func (c *Client) ReadPump() {
 		}
 
 		log.WithField("wsEvent", messageEvent.Event).Debug("ws/client incomming message")
-		c.Hub.Inbound <- messageEvent
+		c.Hub.Inbound <- NewClientEvent(c, messageEvent)
 	}
 }
 
