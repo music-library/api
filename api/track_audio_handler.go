@@ -24,16 +24,12 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		return Error(c, 404, "track does not exist")
 	}
 
-	trackFileInfo, err := os.Stat(track.Path)
-
+	// Open track file for reading
+	file, totalSize, err := openTrack(trackId, track.Path)
 	if err != nil {
-		log.Error("http/track/" + trackId + "/audio track failed to play")
 		return Error(c, 500, "track failed to play")
 	}
-
-	// Update track stats
-	track.Stats.TimesPlayed += 1
-	track.Stats.LastPlayed = time.Now().Unix()
+	defer file.Close()
 
 	mimeType := mime.TypeByExtension(filepath.Ext(track.Path))
 
@@ -41,12 +37,19 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		mimeType = "audio/flac"
 	}
 
-	totalSize := trackFileInfo.Size()
 	c.Set(fiber.HeaderContentType, mimeType)
 	c.Set(fiber.HeaderContentLength, fmt.Sprint(totalSize))
 
 	// Accept range requests
 	reqRange := c.Get(fiber.HeaderRange)
+
+	// Only increment times played at the initial request (not range requests)
+	if reqRange == "" || reqRange == "bytes=0-" {
+		// Update track stats
+		track.Stats.TimesPlayed += 1
+		track.Stats.LastPlayed = time.Now().Unix()
+	}
+
 	if reqRange != "" {
 		parts := strings.Split(strings.Replace(reqRange, "bytes=", "", 1), "-")
 		partialstart := parts[0]
@@ -61,12 +64,6 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		if err != nil || partialend != "" {
 			end = totalSize - 1
 		}
-
-		file, err := os.Open(track.Path)
-		if err != nil {
-			log.Error("http/track/" + trackId + "/audio track file failed to open")
-		}
-		defer file.Close()
 
 		chunksize := end - start + 1
 		buffer := make([]byte, chunksize)
@@ -83,5 +80,24 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		return c.Status(206).Send(buffer[:bytesread])
 	}
 
-	return c.SendFile(track.Path, false)
+	return c.SendFile(track.Path)
+}
+
+// Open track and get file size
+func openTrack(trackId, trackPath string) (*os.File, int64, error) {
+	file, err := os.Open(trackPath)
+
+	if err != nil {
+		log.Error("http/track/" + trackId + "/audio track file failed to open")
+		return nil, 0, err
+	}
+
+	fileStat, err := file.Stat()
+
+	if err != nil {
+		log.Error("http/track/" + trackId + "/audio track file failed to get file.stat")
+		return nil, 0, err
+	}
+
+	return file, fileStat.Size(), nil
 }

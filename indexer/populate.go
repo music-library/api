@@ -24,12 +24,25 @@ func IndexAllLibraries() {
 
 // Async index population (to prevent blocking the server)
 func BootstrapIndex(name, dir string) *Index {
-	// Populate the index
 	newIndex := GetNewIndex(name)
+	cache := useCache.GetCache(newIndex.Id)
+
+	// Detect existing index (and save it). This saves the track stats between reindexes.
+	if MusicLibIndex.Indexes[newIndex.Id] != nil {
+		log.Info("main/metadata/cache saving metadata for index: " + newIndex.Id)
+		metadataJSON, err := sonic.Marshal(*MusicLibIndex.Indexes[newIndex.Id])
+
+		if err != nil {
+			log.Error("main/metadata/cache failed to marshal metadata ", err)
+		}
+
+		cache.Replace(".", "metadata.json", metadataJSON)
+	}
+
+	// Populate the index
 	newIndex.Populate(dir)
 
 	// Read metadata from cache
-	cache := useCache.GetCache(newIndex.Id)
 	indexCache := ReadAndParseMetadata(cache)
 
 	start := time.Now()
@@ -45,7 +58,7 @@ func BootstrapIndex(name, dir string) *Index {
 			// Check if track metadata is cached
 			cachedTrackIndex, isCached := indexCache.TracksKey[indexTrack.Id]
 
-			if isCached {
+			if isCached && indexCache.Tracks[cachedTrackIndex].Metadata.Title != "(unknown)" {
 				cachedTrack := indexCache.Tracks[cachedTrackIndex]
 				indexTrack.IdAlbum = cachedTrack.IdAlbum
 				indexTrack.Metadata = cachedTrack.Metadata

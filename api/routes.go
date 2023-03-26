@@ -4,12 +4,15 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
 func ApiRoutes(router fiber.Router) {
 	router.All("/", BaseHandler)
+
+	router.Get("/ws", websocket.New(WebsocketHandler))
 
 	// Library
 	router.Get("/lib/:libId?", LibIdPatchMiddleware, MainHandler)
