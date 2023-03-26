@@ -26,10 +26,11 @@ API for the Music-Library project, written in Go.
 -   [x] `/health`
 -   [ ] `/health/metrics` // Prometheus metrics?
 -   [x] `/reindex/:password` - Refresh all metadata (without restarting the server)
--   [ ] Get average + primary color of album cover
--   [ ] [socket.io](https://github.com/ambelovsky/gosf)
-    -   [ ] Active user count (existing functionality)
+-   [x] Websocket - create a custom implementation
+    -   [x] Active user count (existing functionality)
+    -   [ ] Currently playing tracks (existing functionality)
     -   [ ] Session following
+    -   [ ] Chat? - encrypted maybe?
 
 ### _Just for fun_
 
@@ -37,13 +38,12 @@ API for the Music-Library project, written in Go.
 -   [ ] benchmarks
 -   [ ] n-gram search
 -   [ ] playlists?
+-   [ ] Get average + primary color of album cover
 -   [ ] video support - also stream audio only via ffmpeg on-the-fly streams
 -   [ ] link straight to playing a track (track # in url - only plays if no track is playing)
 -   [ ] file watcher, re-index after file change (wait a bit before re-indexing to avoid spamming)
 -   [ ] `/track/random`
 -   [ ] `/track/search/:query` - return audio (same as `/track/:id/audio`) - Useful for searching for a song and playing it directly
--   [ ] [socket.io](https://github.com/ambelovsky/gosf)
-    -   [ ] Chat? - encrypted maybe?
 
 ## Development
 

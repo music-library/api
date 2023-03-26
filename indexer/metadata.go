@@ -135,15 +135,19 @@ func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metad
 
 	track := mediainfo.Media.Track[0]
 	durationFloat, _ := strconv.ParseFloat(track.Duration, 32)
-	trackNo, _ := strconv.Atoi(strings.TrimLeft(track.Track, "0")) // Trim leading zeros
-	baseMeta.Track = trackNo
-	baseMeta.Title = track.Title
-	baseMeta.Artist = track.Artist
-	baseMeta.AlbumArtist = track.AlbumArtist
-	baseMeta.Album = track.Album
-	baseMeta.Year = track.Year
-	baseMeta.Genre = track.Genre
-	baseMeta.Composer = track.Composer
+
+	if len(baseMeta.AlbumArtist) <= 1 {
+		trackNo, _ := strconv.Atoi(strings.TrimLeft(track.Track, "0")) // Trim leading zeros
+		baseMeta.Track = trackNo
+		baseMeta.Title = track.Title
+		baseMeta.Artist = track.Artist
+		baseMeta.AlbumArtist = track.AlbumArtist
+		baseMeta.Album = track.Album
+		baseMeta.Year = track.Year
+		baseMeta.Genre = track.Genre
+		baseMeta.Composer = track.Composer
+	}
+
 	baseMeta.Duration = int(durationFloat)
 
 	return baseMeta, nil
@@ -198,12 +202,11 @@ func refineRawMetadata(meta *Metadata, filePath string) *Metadata {
 
 func GetTrackMetadata(filePath string) *Metadata {
 	meta := GetEmptyMetadata()
-	err := error(nil)
 
-	meta, err = getRawMetadataFromMediaInfoCli(meta, filePath)
+	meta = getRawMetadataFromGoLib(meta, filePath)
 
-	if err != nil {
-		meta = getRawMetadataFromGoLib(meta, filePath)
+	if meta.Duration == 0 {
+		meta, _ = getRawMetadataFromMediaInfoCli(meta, filePath)
 	}
 
 	meta = refineRawMetadata(meta, filePath)

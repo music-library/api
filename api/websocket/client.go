@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/websocket/v2"
+	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,6 +36,9 @@ type Client struct {
 	// Initial client connection time.
 	// Useful to calculate connection duration.
 	StartTime int64
+
+	// Unique client identifier
+	Id string
 }
 
 type ClientEvent struct {
@@ -43,7 +47,7 @@ type ClientEvent struct {
 }
 
 func NewClient(h *Hub, c *websocket.Conn) {
-	client := &Client{Hub: h, Conn: c}
+	client := &Client{Hub: h, Conn: c, Id: xid.New().String()}
 	client.Hub.Register <- client
 
 	defer client.Disconnect()
