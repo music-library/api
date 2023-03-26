@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/gosimple/slug"
 	log "github.com/sirupsen/logrus"
 	useCache "gitlab.com/music-library/music-api/cache"
 	"gitlab.com/music-library/music-api/config"
@@ -25,11 +24,13 @@ func IndexAllLibraries() {
 
 // Async index population (to prevent blocking the server)
 func BootstrapIndex(name, dir string) *Index {
-	cache := useCache.GetCache(slug.Make(name))
+	newIndex := GetNewIndex(name)
+	cache := useCache.GetCache(newIndex.Id)
 
 	// Detect existing index (and save it). This saves the track stats between reindexes.
-	if MusicLibIndex.Indexes[name] != nil {
-		metadataJSON, err := sonic.Marshal(*MusicLibIndex.Indexes[name])
+	if MusicLibIndex.Indexes[newIndex.Id] != nil {
+		log.Info("main/metadata/cache saving metadata for index: " + newIndex.Id)
+		metadataJSON, err := sonic.Marshal(*MusicLibIndex.Indexes[newIndex.Id])
 
 		if err != nil {
 			log.Error("main/metadata/cache failed to marshal metadata ", err)
@@ -39,7 +40,6 @@ func BootstrapIndex(name, dir string) *Index {
 	}
 
 	// Populate the index
-	newIndex := GetNewIndex(name)
 	newIndex.Populate(dir)
 
 	// Read metadata from cache
