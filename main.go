@@ -58,6 +58,7 @@ func main() {
 
 	// Setup the router
 	api.ApiRoutes(app)
+	api.WebsocketEventHanders(api.WsHub)
 	go api.WsHub.Run() // Start websocket
 
 	// Index all libraries on startup.

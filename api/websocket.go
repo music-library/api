@@ -22,3 +22,13 @@ func WebsocketUpgradeMiddleware(c *fiber.Ctx) error {
 func WebsocketHandler(c *fiberWs.Conn) {
 	websocket.NewClient(WsHub, c)
 }
+
+func WebsocketEventHanders(h *websocket.Hub) {
+	h.On("ws:connect", func(h *websocket.Hub, ce *websocket.ClientEvent) {
+		h.EmitConnectionCount()
+	})
+
+	h.On("ws:disconnect", func(h *websocket.Hub, ce *websocket.ClientEvent) {
+		h.EmitConnectionCount()
+	})
+}
