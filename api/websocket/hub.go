@@ -16,22 +16,28 @@ type Hub struct {
 	// Connected clients
 	Clients map[*Client]bool
 
-	// Inbound messages from the clients
-	Inbound chan *Event
-
 	// Register client (connected)
 	Register chan *Client
 
 	// Unregister client (disconnect)
 	Unregister chan *Client
+
+	// Inbound messages from the clients
+	Inbound chan *Event
+
+	// User defined event handlers for specific incoming events.
+	//
+	// Use `On` method to register a handler for an event.
+	InboundEventHandlers map[string][]func(*Hub, *Event)
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		Clients:    make(map[*Client]bool),
-		Inbound:    make(chan *Event),
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
+		Clients:              make(map[*Client]bool),
+		Register:             make(chan *Client),
+		Unregister:           make(chan *Client),
+		Inbound:              make(chan *Event),
+		InboundEventHandlers: make(map[string][]func(*Hub, *Event)),
 	}
 }
 
@@ -64,8 +70,12 @@ func (h *Hub) Run() {
 
 			// Inbound messages from clients
 		case event := <-h.Inbound:
-			log.WithField("wsEvent", event.Event).Debug("ws/hub incomming message")
-			h.Emit(NewEvent("ws:inbound", event.Data))
+			// Call user defined handlers for this event
+			if handlers, ok := h.InboundEventHandlers[event.Event]; ok {
+				for _, handler := range handlers {
+					handler(h, event)
+				}
+			}
 
 			// Ping all clients periodically to check if they are still connected.
 			// Disconnect them if they do not respond before the `writeWait` timeout.
@@ -78,6 +88,11 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+// Register handler(s) for an event
+func (h *Hub) On(event string, handlers ...func(*Hub, *Event)) {
+	h.InboundEventHandlers[event] = append(h.InboundEventHandlers[event], handlers...)
 }
 
 // Emit sends an event to all connected clients

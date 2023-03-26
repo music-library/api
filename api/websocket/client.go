@@ -65,6 +65,7 @@ func (c *Client) ReadPump() {
 			continue
 		}
 
+		log.WithField("wsEvent", messageEvent.Event).Debug("ws/client incomming message")
 		c.Hub.Inbound <- messageEvent
 	}
 }
