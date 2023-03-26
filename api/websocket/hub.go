@@ -17,7 +17,7 @@ type Hub struct {
 	Clients map[*Client]bool
 
 	// Inbound messages from the clients
-	Inbound chan []byte
+	Inbound chan *Event
 
 	// Register client (connected)
 	Register chan *Client
@@ -29,7 +29,7 @@ type Hub struct {
 func NewHub() *Hub {
 	return &Hub{
 		Clients:    make(map[*Client]bool),
-		Inbound:    make(chan []byte),
+		Inbound:    make(chan *Event),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 	}
@@ -62,9 +62,9 @@ func (h *Hub) Run() {
 			}
 
 			// Inbound messages from clients
-		case message := <-h.Inbound:
-			log.Debug("ws/hub incomming message", string(message))
-			h.Emit(NewEvent("ws:inbound", string(message)))
+		case event := <-h.Inbound:
+			log.WithField("wsEvent", event.Event).Debug("ws/hub incomming message")
+			h.Emit(NewEvent("ws:inbound", event.Data))
 
 			// Ping all clients periodically to check if they are still connected.
 			// Disconnect them if they do not respond before the `writeWait` timeout.
@@ -89,7 +89,7 @@ func (h *Hub) Emit(event *Event) error {
 		return err
 	}
 
-	log.WithField("wsMsg", string(msg)).Debug("ws/hub broadcasting message")
+	log.WithField("wsEvent", event.Event).Debug("ws/hub broadcasting message")
 
 	for client := range h.Clients {
 		client.Send(msg)
