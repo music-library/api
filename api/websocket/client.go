@@ -19,8 +19,8 @@ const (
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
 
-	// Maximum message size allowed from peer.
-	maxMessageSize = 512
+	// Maximum message size allowed from peer. (2kb)
+	maxMessageSize = 2000
 )
 
 // Client is a middleman between the websocket connection and the hub.
@@ -33,6 +33,8 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	Send chan []byte
 
+	// Initial client connection time.
+	// Useful to calculate connection duration.
 	StartTime int64
 }
 

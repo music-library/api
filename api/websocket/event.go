@@ -17,6 +17,10 @@ func NewEvent(event string, data interface{}) *Event {
 	}
 }
 
+func (e *Event) Emit(h *Hub) error {
+	return h.Emit(e)
+}
+
 func (e *Event) ToJSON() ([]byte, error) {
 	eventJSON, err := sonic.Marshal(e)
 

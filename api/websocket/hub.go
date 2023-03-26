@@ -40,15 +40,15 @@ func (h *Hub) Run() {
 		case client := <-h.Register:
 			h.Clients[client] = true
 			client.StartTime = time.Now().Unix()
-			go h.BroadcastConnectionCount()
+			go h.EmitConnectionCount()
 			log.WithField("remoteAddr", client.GetIp()).Info("ws/hub registering client")
 
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
-				log.WithField("remoteAddr", client.GetIp()).WithField("connTime", time.Since(time.Unix(client.StartTime, 0))).Info("ws/hub unregistering client")
+				log.WithField("remoteAddr", client.GetIp()).WithField("duration", time.Since(time.Unix(client.StartTime, 0))).Info("ws/hub unregistering client")
 				close(client.Send)
 				delete(h.Clients, client)
-				go h.BroadcastConnectionCount()
+				go h.EmitConnectionCount()
 			}
 
 		case message := <-h.Broadcast:
@@ -60,7 +60,18 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) BroadcastConnectionCount() {
-	event, _ := NewEvent(WsEventConnectionCount, len(h.Clients)).ToJSON()
-	h.Broadcast <- event
+// Emit sends an event to all connected clients
+func (h *Hub) Emit(event *Event) error {
+	msg, err := event.ToJSON()
+
+	if err != nil {
+		return err
+	}
+
+	h.Broadcast <- msg
+	return nil
+}
+
+func (h *Hub) EmitConnectionCount() error {
+	return h.Emit(NewEvent(WsEventConnectionCount, len(h.Clients)))
 }
