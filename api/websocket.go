@@ -2,15 +2,16 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/websocket/v2"
+	fiberWs "github.com/gofiber/websocket/v2"
+	"gitlab.com/music-library/music-api/api/websocket"
 )
 
-var WsHub = newHub()
+var WsHub = websocket.NewHub()
 
 func WebsocketUpgradeMiddleware(c *fiber.Ctx) error {
 	// IsWebSocketUpgrade returns true if the client
 	// requested upgrade to the WebSocket protocol.
-	if websocket.IsWebSocketUpgrade(c) {
+	if fiberWs.IsWebSocketUpgrade(c) {
 		c.Locals("allowed", true)
 		return c.Next()
 	}
@@ -18,10 +19,10 @@ func WebsocketUpgradeMiddleware(c *fiber.Ctx) error {
 	return fiber.ErrUpgradeRequired
 }
 
-func WebsocketHandler(c *websocket.Conn) {
-	client := &Client{hub: WsHub, conn: c, send: make(chan []byte, 256)}
-	client.hub.register <- client
+func WebsocketHandler(c *fiberWs.Conn) {
+	client := &websocket.Client{Hub: WsHub, Conn: c, Send: make(chan []byte, 256)}
+	client.Hub.Register <- client
 
-	go client.writePump()
-	client.readPump()
+	go client.WritePump()
+	client.ReadPump()
 }
