@@ -27,7 +27,7 @@ func WebsocketHandler(c *fiberWs.Conn) {
 func WebsocketEventHanders(h *websocket.Hub) {
 	h.On(websocket.WsConnect, func(h *websocket.Hub, ce *websocket.ClientEvent) {
 		h.EmitConnectionCount()
-		EmitPlayingTracks(h)
+		EmitPlayingTracks(h, ce.Client) // Only emit playing tracks to the new client
 	})
 
 	h.On(websocket.WsDisconnect, func(h *websocket.Hub, ce *websocket.ClientEvent) {
@@ -51,6 +51,6 @@ func WebsocketEventHanders(h *websocket.Hub) {
 	})
 }
 
-func EmitPlayingTracks(h *websocket.Hub) {
-	h.Emit(websocket.NewEvent("music:playingTracks", indexer.MusicLibIndex.Socket.PlayingTracks()))
+func EmitPlayingTracks(h *websocket.Hub, clients ...*websocket.Client) {
+	h.Emit(websocket.NewEvent("music:playingTracks", indexer.MusicLibIndex.Socket.PlayingTracks()), clients...)
 }
