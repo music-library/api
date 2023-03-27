@@ -7,15 +7,22 @@ type Socket struct {
 type SocketSession struct {
 	Id             string
 	PlayingTrackId string
+	IsPaused       bool
+	Tags           []string
+	Queue          []string
 }
 
 func NewSocket() *Socket {
 	return &Socket{Sessions: make(map[string]*SocketSession)}
 }
 
+func NewSocketSession(userId string) *SocketSession {
+	return &SocketSession{Id: userId, PlayingTrackId: "", IsPaused: false, Tags: []string{}, Queue: []string{}}
+}
+
 func (s *Socket) GetOrCreateSession(userId string) *SocketSession {
 	if _, ok := s.Sessions[userId]; !ok {
-		s.Sessions[userId] = &SocketSession{Id: userId}
+		s.Sessions[userId] = NewSocketSession(userId)
 	}
 
 	return s.Sessions[userId]
