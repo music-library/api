@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"io/fs"
 	"mime"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -25,11 +27,14 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 	}
 
 	// Open track file for reading
-	file, totalSize, err := openTrack(trackId, track.Path)
+	file, fileStat, err := openTrack(trackId, track.Path)
 	if err != nil {
 		return Error(c, 500, "track failed to play")
 	}
 	defer file.Close()
+
+	totalSize := fileStat.Size()
+	lastModified := fileStat.ModTime()
 
 	mimeType := mime.TypeByExtension(filepath.Ext(track.Path))
 
@@ -39,6 +44,9 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 
 	c.Set(fiber.HeaderContentType, mimeType)
 	c.Set(fiber.HeaderContentLength, fmt.Sprint(totalSize))
+	c.Set(fiber.HeaderLastModified, lastModified.Format(http.TimeFormat))
+	c.Set(fiber.HeaderCacheControl, "public, max-age=31536000")
+	c.Set(fiber.HeaderContentDisposition, fmt.Sprintf("inline; filename=%s - %s%s", track.Metadata.Artist, track.Metadata.Title, filepath.Ext(track.Path)))
 
 	// Accept range requests
 	reqRange := c.Get(fiber.HeaderRange)
@@ -74,30 +82,31 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		}
 
 		c.Set(fiber.HeaderAcceptRanges, "bytes")
-		c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", start, end, totalSize))
 		c.Set(fiber.HeaderContentLength, fmt.Sprint(chunksize))
+		c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", start, end, totalSize))
+		c.Status(fiber.StatusPartialContent)
 
-		return c.Status(206).Send(buffer[:bytesread])
+		return c.Send(buffer[:bytesread])
 	}
 
 	return c.SendFile(track.Path)
 }
 
 // Open track and get file size
-func openTrack(trackId, trackPath string) (*os.File, int64, error) {
+func openTrack(trackId, trackPath string) (*os.File, fs.FileInfo, error) {
 	file, err := os.Open(trackPath)
 
 	if err != nil {
 		log.Error("http/track/" + trackId + "/audio track file failed to open")
-		return nil, 0, err
+		return nil, nil, err
 	}
 
 	fileStat, err := file.Stat()
 
 	if err != nil {
 		log.Error("http/track/" + trackId + "/audio track file failed to get file.stat")
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	return file, fileStat.Size(), nil
+	return file, fileStat, nil
 }
