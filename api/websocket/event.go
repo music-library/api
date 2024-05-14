@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"github.com/bytedance/sonic"
+	"encoding/json"
 )
 
 // Basic event type for every websocket message
@@ -22,7 +22,7 @@ func (e *Event) Emit(h *Hub) error {
 }
 
 func (e *Event) ToJSON() ([]byte, error) {
-	eventJSON, err := sonic.Marshal(e)
+	eventJSON, err := json.Marshal(e)
 
 	if err != nil {
 		return nil, err

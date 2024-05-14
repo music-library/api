@@ -1,11 +1,11 @@
 package indexer
 
 import (
+	"encoding/json"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/bytedance/sonic"
 	log "github.com/sirupsen/logrus"
 	useCache "gitlab.com/music-library/music-api/cache"
 	"gitlab.com/music-library/music-api/config"
@@ -30,7 +30,7 @@ func BootstrapIndex(name, dir string) *Index {
 	// Detect existing index (and save it). This saves the track stats between reindexes.
 	if MusicLibIndex.Indexes[newIndex.Id] != nil {
 		log.Info("main/metadata/cache saving metadata for index: " + newIndex.Id)
-		metadataJSON, err := sonic.Marshal(*MusicLibIndex.Indexes[newIndex.Id])
+		metadataJSON, err := json.Marshal(*MusicLibIndex.Indexes[newIndex.Id])
 
 		if err != nil {
 			log.Error("main/metadata/cache failed to marshal metadata ", err)
@@ -129,7 +129,7 @@ func BootstrapIndex(name, dir string) *Index {
 	log.Info("main/metadata took ", time.Since(start))
 
 	// Cache metadata
-	metadataJSON, err := sonic.Marshal(newIndex)
+	metadataJSON, err := json.Marshal(newIndex)
 
 	if err != nil {
 		log.Error("main/metadata/cache failed to marshal metadata ", err)

@@ -28,7 +28,7 @@ API for the Music-Library project, written in Go.
 -   [x] `/reindex/:password` - Refresh all metadata (without restarting the server)
 -   [x] Websocket - create a custom implementation
     -   [x] Active user count (existing functionality)
-    -   [ ] Currently playing tracks (existing functionality)
+    -   [x] Currently playing tracks (existing functionality)
     -   [ ] Session following
     -   [ ] Chat? - encrypted maybe?
 
