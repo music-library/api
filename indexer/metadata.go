@@ -1,6 +1,7 @@
 package indexer
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bytedance/sonic"
 	"github.com/dhowden/tag"
 	log "github.com/sirupsen/logrus"
 	useCache "gitlab.com/music-library/music-api/cache"
@@ -126,7 +126,7 @@ func getRawMetadataFromMediaInfoCli(baseMeta *Metadata, filePath string) (*Metad
 	}{}
 
 	// Parse JSON
-	err = sonic.Unmarshal(mediainfoJSON, &mediainfo)
+	err = json.Unmarshal(mediainfoJSON, &mediainfo)
 
 	if err != nil || len(mediainfo.Media.Track) == 0 {
 		log.Error("index/metadata/CLI failed to unmarshal mediainfo json: `" + filePath + "`")
@@ -259,7 +259,7 @@ func ReadAndParseMetadata(cache useCache.Cache) *Index {
 	}
 
 	if err == nil {
-		sonic.Unmarshal(metadataRaw, indexCache)
+		json.Unmarshal(metadataRaw, indexCache)
 	}
 
 	return indexCache

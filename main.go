@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/go-co-op/gocron"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -42,9 +41,7 @@ func main() {
 	// Initiate Fiber web-server
 	// Uses custom JSON encoding as recommended: https://docs.gofiber.io/guide/faster-fiber
 	app := fiber.New(fiber.Config{
-		AppName:     "music-api",
-		JSONEncoder: sonic.Marshal,
-		JSONDecoder: sonic.Unmarshal,
+		AppName: "music-api",
 	})
 
 	// Middleware

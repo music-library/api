@@ -4,9 +4,9 @@
 package websocket
 
 import (
+	"encoding/json"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/gofiber/websocket/v2"
 	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
@@ -76,7 +76,7 @@ func (c *Client) ReadPump() {
 
 		messageEvent := &Event{}
 
-		if err := sonic.Unmarshal(message, messageEvent); err != nil {
+		if err := json.Unmarshal(message, messageEvent); err != nil {
 			log.WithField("remoteAddr", c.GetIp()).Debug("ws/client failed to unmarshal message")
 			continue
 		}
