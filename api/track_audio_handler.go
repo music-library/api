@@ -75,14 +75,16 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 	startByte, _ := strconv.ParseInt(rangeValues[0], 10, 64)
 	endByte := totalSize - 1
 	chunksize := endByte - startByte + 1
+
 	if len(rangeValues) == 2 && rangeValues[1] != "" {
 		endByte, _ = strconv.ParseInt(rangeValues[1], 10, 64)
+		chunksize = endByte - startByte + 1
 	}
 
+	c.Status(fiber.StatusPartialContent)
 	c.Set(fiber.HeaderAcceptRanges, "bytes")
 	c.Set(fiber.HeaderContentLength, strconv.FormatInt(chunksize, 10))
 	c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", startByte, endByte, totalSize))
-	c.Status(fiber.StatusPartialContent)
 
 	// Seek to the start byte and stream the audio
 	_, err = file.Seek(startByte, io.SeekStart)
