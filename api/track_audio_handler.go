@@ -2,11 +2,13 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +37,7 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 
 	totalSize := fileStat.Size()
 	lastModified := fileStat.ModTime()
+	trackMetaFriendlyName := regexp.MustCompile(`[^a-zA-Z0-9\s\-\_\.]`).ReplaceAllString(fmt.Sprintf("%s - %s%s", track.Metadata.Artist, track.Metadata.Title, filepath.Ext(track.Path)), "")
 
 	mimeType := mime.TypeByExtension(filepath.Ext(track.Path))
 
@@ -46,7 +49,7 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 	c.Set(fiber.HeaderContentLength, fmt.Sprint(totalSize))
 	c.Set(fiber.HeaderLastModified, lastModified.Format(http.TimeFormat))
 	c.Set(fiber.HeaderCacheControl, "public, max-age=31536000")
-	c.Set(fiber.HeaderContentDisposition, fmt.Sprintf("inline; filename=%s - %s%s", track.Metadata.Artist, track.Metadata.Title, filepath.Ext(track.Path)))
+	c.Set(fiber.HeaderContentDisposition, fmt.Sprintf("inline; filename=%s", trackMetaFriendlyName))
 
 	// Accept range requests
 	reqRange := c.Get(fiber.HeaderRange)
@@ -58,38 +61,41 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		track.Stats.LastPlayed = time.Now().Unix()
 	}
 
-	if reqRange != "" {
-		parts := strings.Split(strings.Replace(reqRange, "bytes=", "", 1), "-")
-		partialstart := parts[0]
-		partialend := parts[1]
-
-		start, err := strconv.ParseInt(partialstart, 10, 64)
+	if reqRange == "" {
+		// No Range header, send the entire file
+		_, err = io.Copy(c, file)
 		if err != nil {
-			start = 0
+			log.Error("http/track/" + trackId + "/audio track failed to copy")
 		}
-
-		end, err := strconv.ParseInt(partialend, 10, 64)
-		if err != nil || partialend != "" {
-			end = totalSize - 1
-		}
-
-		chunksize := end - start + 1
-		buffer := make([]byte, chunksize)
-		bytesread, err := file.ReadAt(buffer, start)
-
-		if err != nil {
-			log.Error("http/track/" + trackId + "/audio track file failed to read correctly")
-		}
-
-		c.Set(fiber.HeaderAcceptRanges, "bytes")
-		c.Set(fiber.HeaderContentLength, fmt.Sprint(chunksize))
-		c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", start, end, totalSize))
-		c.Status(fiber.StatusPartialContent)
-
-		return c.Send(buffer[:bytesread])
+		return err
 	}
 
-	return c.SendFile(track.Path)
+	// Parse the Range header
+	rangeValues := strings.Split(strings.Split(reqRange, "=")[1], "-")
+	startByte, _ := strconv.ParseInt(rangeValues[0], 10, 64)
+	endByte := totalSize - 1
+	chunksize := endByte - startByte + 1
+	if len(rangeValues) == 2 && rangeValues[1] != "" {
+		endByte, _ = strconv.ParseInt(rangeValues[1], 10, 64)
+	}
+
+	c.Set(fiber.HeaderAcceptRanges, "bytes")
+	c.Set(fiber.HeaderContentLength, strconv.FormatInt(chunksize, 10))
+	c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", startByte, endByte, totalSize))
+	c.Status(fiber.StatusPartialContent)
+
+	// Seek to the start byte and stream the audio
+	_, err = file.Seek(startByte, io.SeekStart)
+	if err != nil {
+		log.Error("http/track/" + trackId + "/audio track failed seek to the start byte")
+		return Error(c, 500, "track failed to seek to the start byte")
+	}
+
+	_, err = io.Copy(c, io.LimitReader(file, chunksize))
+	if err != nil {
+		log.Error("http/track/" + trackId + "/audio track failed to copy")
+	}
+	return err
 }
 
 // Open track and get file size
