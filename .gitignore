@@ -2,11 +2,11 @@
 **/music-api
 **/music-api-dev
 
-bin/
-tmp/
-data/
-music/
-target/
+/bin/
+/tmp/
+/data/
+/music/
+/target/
 .idea/
 
 job.nomad
