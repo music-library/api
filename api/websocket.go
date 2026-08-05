@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	fiberWs "github.com/gofiber/websocket/v2"
+	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api/websocket"
 	"gitlab.com/music-library/music-api/indexer"
 )
@@ -41,9 +42,16 @@ func WebsocketEventHanders(h *websocket.Hub) {
 			ce.Event.Data = ""
 		}
 
-		userId := ce.Client.Id
-		playingTrack := ce.Event.Data.(string)
+		playingTrack, ok := ce.Event.Data.(string)
+		if !ok {
+			log.WithFields(log.Fields{
+				"remoteAddr": ce.Client.GetIp(),
+				"wsEvent":    ce.Event.Type,
+			}).Warn("ws/handler ignored event with invalid data type")
+			return
+		}
 
+		userId := ce.Client.Id
 		userSession := indexer.MusicLibIndex.Socket.GetOrCreateSession(userId)
 		userSession.PlayingTrackId = playingTrack
 
