@@ -3,7 +3,6 @@ package indexer
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -58,29 +57,32 @@ func GetEmptyMetadata() *Metadata {
 	}
 }
 
-func initRawMetadataFromGoLib(filePath string) tag.Metadata {
-	file, fileErr := os.Open(filePath)
-
-	if fileErr != nil {
-		log.Error("index/metadata/GoLib failed to open file " + filePath)
+func initRawMetadataFromGoLib(filePath string) (tag.Metadata, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.WithError(err).Error("index/metadata/GoLib failed to open file " + filePath)
+		return nil, err
 	}
 
 	defer file.Close()
 
-	meta, err := tag.ReadFrom(io.ReadSeeker(file))
-
+	meta, err := tag.ReadFrom(file)
 	if err != nil {
-		log.Error("index/metadata/GoLib failed to extract metadata from " + filePath)
+		log.WithError(err).Error("index/metadata/GoLib failed to extract metadata from " + filePath)
+		return nil, err
 	}
 
-	return meta
+	return meta, nil
 }
 
 // Extract metadata from file using Go lib.
 //
 // @Note: Doesn't support duration.
 func getRawMetadataFromGoLib(baseMeta *Metadata, filePath string) *Metadata {
-	meta := initRawMetadataFromGoLib(filePath)
+	meta, err := initRawMetadataFromGoLib(filePath)
+	if err != nil {
+		return baseMeta
+	}
 
 	trackNo, _ := meta.Track()
 	baseMeta.Track = trackNo
@@ -216,7 +218,10 @@ func GetTrackMetadata(filePath string) *Metadata {
 
 // Returns cover image as byte array, and mime type
 func GetTrackCover(filePath string) ([]byte, string) {
-	meta := initRawMetadataFromGoLib(filePath)
+	meta, err := initRawMetadataFromGoLib(filePath)
+	if err != nil {
+		return nil, "image/jpeg"
+	}
 
 	picture := meta.Picture()
 
