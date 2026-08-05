@@ -48,8 +48,15 @@ func (h *Hub) Run() {
 		ticker.Stop()
 	}()
 
+	h.run(ticker.C, nil)
+}
+
+func (h *Hub) run(pings <-chan time.Time, done <-chan struct{}) {
 	for {
 		select {
+		case <-done:
+			return
+
 		// Register client
 		case client := <-h.Register:
 			h.Clients[client] = true
@@ -59,14 +66,7 @@ func (h *Hub) Run() {
 
 			// Unregister client
 		case client := <-h.Unregister:
-			if _, ok := h.Clients[client]; ok {
-				log.WithField("remoteAddr", client.GetIp()).WithField("duration", time.Since(time.Unix(client.StartTime, 0))).Debug("ws/hub unregistering client")
-				client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
-				client.Conn.Close()
-				delete(h.Clients, client)
-				h.onCallInboundEventHandlers(NewClientEvent(client, NewEvent(WsDisconnect, nil)))
-				continue
-			}
+			h.unregister(client)
 
 			// Inbound messages from clients
 		case event := <-h.Inbound:
@@ -75,13 +75,29 @@ func (h *Hub) Run() {
 
 			// Ping all clients periodically to check if they are still connected.
 			// Disconnect them if they do not respond before the `writeWait` timeout.
-		case <-ticker.C:
-			for client := range h.Clients {
-				client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
-				if err := client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-					client.Disconnect()
-				}
-			}
+		case <-pings:
+			h.pingClients()
+		}
+	}
+}
+
+func (h *Hub) unregister(client *Client) {
+	if _, ok := h.Clients[client]; !ok {
+		return
+	}
+
+	log.WithField("remoteAddr", client.GetIp()).WithField("duration", time.Since(time.Unix(client.StartTime, 0))).Debug("ws/hub unregistering client")
+	client.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+	client.Conn.Close()
+	delete(h.Clients, client)
+	h.onCallInboundEventHandlers(NewClientEvent(client, NewEvent(WsDisconnect, nil)))
+}
+
+func (h *Hub) pingClients() {
+	for client := range h.Clients {
+		client.Conn.SetWriteDeadline(time.Now().Add(writeWait))
+		if err := client.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+			h.unregister(client)
 		}
 	}
 }
