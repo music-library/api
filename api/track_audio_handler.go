@@ -46,10 +46,10 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 	}
 
 	c.Set(fiber.HeaderContentType, mimeType)
-	c.Set(fiber.HeaderContentLength, fmt.Sprint(totalSize))
 	c.Set(fiber.HeaderLastModified, lastModified.Format(http.TimeFormat))
 	c.Set(fiber.HeaderCacheControl, "public, max-age=31536000")
 	c.Set(fiber.HeaderContentDisposition, fmt.Sprintf("inline; filename=%s", trackMetaFriendlyName))
+	c.Set(fiber.HeaderAcceptRanges, "bytes")
 
 	// Accept range requests
 	reqRange := c.Get(fiber.HeaderRange)
@@ -63,6 +63,7 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 
 	if reqRange == "" {
 		// No Range header, send the entire file
+		c.Set(fiber.HeaderContentLength, strconv.FormatInt(totalSize, 10))
 		_, err = io.Copy(c, file)
 		if err != nil {
 			log.Error("http/track/" + trackId + "/audio track failed to copy")
@@ -71,18 +72,14 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 	}
 
 	// Parse the Range header
-	rangeValues := strings.Split(strings.Split(reqRange, "=")[1], "-")
-	startByte, _ := strconv.ParseInt(rangeValues[0], 10, 64)
-	endByte := totalSize - 1
+	startByte, endByte, ok := parseByteRange(reqRange, totalSize)
+	if !ok {
+		c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes */%d", totalSize))
+		return Error(c, fiber.StatusRequestedRangeNotSatisfiable, "requested range not satisfiable")
+	}
 	chunksize := endByte - startByte + 1
 
-	if len(rangeValues) == 2 && rangeValues[1] != "" {
-		endByte, _ = strconv.ParseInt(rangeValues[1], 10, 64)
-		chunksize = endByte - startByte + 1
-	}
-
 	c.Status(fiber.StatusPartialContent)
-	c.Set(fiber.HeaderAcceptRanges, "bytes")
 	c.Set(fiber.HeaderContentLength, strconv.FormatInt(chunksize, 10))
 	c.Set(fiber.HeaderContentRange, fmt.Sprintf("bytes %d-%d/%d", startByte, endByte, totalSize))
 
@@ -98,6 +95,68 @@ func TrackAudioHandler(c *fiber.Ctx) error {
 		log.Error("http/track/" + trackId + "/audio track failed to copy")
 	}
 	return err
+}
+
+// parseByteRange parses a single HTTP byte range and bounds it to size.
+func parseByteRange(value string, size int64) (int64, int64, bool) {
+	if size <= 0 {
+		return 0, 0, false
+	}
+
+	unit, rangeValue, found := strings.Cut(strings.TrimSpace(value), "=")
+	if !found || !strings.EqualFold(unit, "bytes") || rangeValue == "" || strings.ContainsAny(rangeValue, ",=") {
+		return 0, 0, false
+	}
+
+	startValue, endValue, found := strings.Cut(rangeValue, "-")
+	if !found || strings.Contains(endValue, "-") {
+		return 0, 0, false
+	}
+
+	if startValue == "" {
+		suffixLength, ok := parseRangeNumber(endValue)
+		if !ok || suffixLength == 0 {
+			return 0, 0, false
+		}
+
+		if suffixLength >= size {
+			return 0, size - 1, true
+		}
+		return size - suffixLength, size - 1, true
+	}
+
+	start, ok := parseRangeNumber(startValue)
+	if !ok || start >= size {
+		return 0, 0, false
+	}
+
+	if endValue == "" {
+		return start, size - 1, true
+	}
+
+	end, ok := parseRangeNumber(endValue)
+	if !ok || start > end {
+		return 0, 0, false
+	}
+	if end >= size {
+		end = size - 1
+	}
+
+	return start, end, true
+}
+
+func parseRangeNumber(value string) (int64, bool) {
+	if value == "" {
+		return 0, false
+	}
+	for _, char := range value {
+		if char < '0' || char > '9' {
+			return 0, false
+		}
+	}
+
+	number, err := strconv.ParseInt(value, 10, 64)
+	return number, err == nil
 }
 
 // Open track and get file size
