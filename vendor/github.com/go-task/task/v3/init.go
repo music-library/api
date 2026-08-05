@@ -1,38 +1,50 @@
 package task
 
 import (
-	"fmt"
-	"io"
+	_ "embed"
 	"os"
 
+	"github.com/go-task/task/v3/errors"
 	"github.com/go-task/task/v3/internal/filepathext"
+	"github.com/go-task/task/v3/taskfile"
 )
 
-const defaultTaskfile = `# https://taskfile.dev
+const defaultFilename = "Taskfile.yml"
 
-version: '3'
+//go:embed taskfile/templates/default.yml
+var DefaultTaskfile string
 
-vars:
-  GREETING: Hello, World!
-
-tasks:
-  default:
-    cmds:
-      - echo "{{.GREETING}}"
-    silent: true
-`
-
-// InitTaskfile Taskfile creates a new Taskfile
-func InitTaskfile(w io.Writer, dir string) error {
-	f := filepathext.SmartJoin(dir, "Taskfile.yaml")
-
-	if _, err := os.Stat(f); err == nil {
-		return ErrTaskfileAlreadyExists
+// InitTaskfile creates a new Taskfile at path.
+//
+// path can be either a file path or a directory path.
+// If path is a directory, path/Taskfile.yml will be created.
+//
+// The final file path is always returned and may be different from the input path.
+func InitTaskfile(path string) (string, error) {
+	info, err := os.Stat(path)
+	if err == nil && !info.IsDir() {
+		return path, errors.TaskfileAlreadyExistsError{}
 	}
 
-	if err := os.WriteFile(f, []byte(defaultTaskfile), 0o644); err != nil {
-		return err
+	if info != nil && info.IsDir() {
+		// path was a directory, check if there is a Taskfile already
+		if hasDefaultTaskfile(path) {
+			return path, errors.TaskfileAlreadyExistsError{}
+		}
+		path = filepathext.SmartJoin(path, defaultFilename)
 	}
-	fmt.Fprintf(w, "Taskfile.yaml created in the current directory\n")
-	return nil
+
+	if err := os.WriteFile(path, []byte(DefaultTaskfile), 0o644); err != nil {
+		return path, err
+	}
+	return path, nil
+}
+
+func hasDefaultTaskfile(dir string) bool {
+	for _, name := range taskfile.DefaultTaskfiles {
+		if _, err := os.Stat(filepathext.SmartJoin(dir, name)); err == nil {
+			return true
+		}
+	}
+	return false
 }

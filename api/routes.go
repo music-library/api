@@ -3,8 +3,8 @@ package api
 import (
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/websocket/v2"
+	"github.com/gofiber/contrib/v3/websocket"
+	"github.com/gofiber/fiber/v3"
 	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/indexer"
 )
@@ -29,7 +29,7 @@ func ApiRoutes(router fiber.Router) {
 	router.Get("/reindex/:password", PasswordMiddleware, ReindexHandler)
 }
 
-func PasswordMiddleware(c *fiber.Ctx) error {
+func PasswordMiddleware(c fiber.Ctx) error {
 	password := c.Params("password")
 
 	if password != config.Config.AuthPassword {
@@ -39,7 +39,7 @@ func PasswordMiddleware(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func LibIdPatchMiddleware(c *fiber.Ctx) error {
+func LibIdPatchMiddleware(c fiber.Ctx) error {
 	libId := c.Params("libId", indexer.MusicLibIndex.DefaultKey)
 
 	// @Node: Header has a problem: We can't set one on the FE for things like img src or audio src

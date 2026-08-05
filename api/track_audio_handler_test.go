@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/music-library/music-api/indexer"
 )
@@ -49,7 +49,7 @@ func TestTrackAudioHandlerRanges(t *testing.T) {
 	}
 
 	app := fiber.New()
-	app.Get("/tracks/:id/audio", func(c *fiber.Ctx) error {
+	app.Get("/tracks/:id/audio", func(c fiber.Ctx) error {
 		c.Locals("libId", libraryID)
 		return TrackAudioHandler(c)
 	})
@@ -62,7 +62,7 @@ func TestTrackAudioHandlerRanges(t *testing.T) {
 			req.Header.Set(fiber.HeaderRange, rangeHeader)
 		}
 
-		resp, err := app.Test(req, -1)
+		resp, err := app.Test(req, fiber.TestConfig{Timeout: 0})
 		if err != nil {
 			t.Fatal(err)
 		}

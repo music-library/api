@@ -3,59 +3,54 @@ package args
 import (
 	"strings"
 
-	"github.com/go-task/task/v3/taskfile"
+	"github.com/spf13/pflag"
+	"mvdan.cc/sh/v3/syntax"
+
+	"github.com/go-task/task/v3"
+	"github.com/go-task/task/v3/taskfile/ast"
 )
 
-// ParseV3 parses command line argument: tasks and global variables
-func ParseV3(args ...string) ([]taskfile.Call, *taskfile.Vars) {
-	var calls []taskfile.Call
-	var globals = &taskfile.Vars{}
+// Get fetches the remaining arguments after CLI parsing and splits them into
+// two groups: the arguments before the double dash (--) and the arguments after
+// the double dash.
+func Get() ([]string, []string, error) {
+	args := pflag.Args()
+	doubleDashPos := pflag.CommandLine.ArgsLenAtDash()
+
+	if doubleDashPos == -1 {
+		return args, nil, nil
+	}
+	return args[:doubleDashPos], args[doubleDashPos:], nil
+}
+
+// Parse parses command line argument: tasks and global variables
+func Parse(args ...string) ([]*task.Call, *ast.Vars) {
+	calls := []*task.Call{}
+	globals := ast.NewVars()
 
 	for _, arg := range args {
 		if !strings.Contains(arg, "=") {
-			calls = append(calls, taskfile.Call{Task: arg})
+			calls = append(calls, &task.Call{Task: arg})
 			continue
 		}
 
 		name, value := splitVar(arg)
-		globals.Set(name, taskfile.Var{Static: value})
-	}
-
-	if len(calls) == 0 {
-		calls = append(calls, taskfile.Call{Task: "default"})
+		globals.Set(name, ast.Var{Value: value})
 	}
 
 	return calls, globals
 }
 
-// ParseV2 parses command line argument: tasks and vars of each task
-func ParseV2(args ...string) ([]taskfile.Call, *taskfile.Vars) {
-	var calls []taskfile.Call
-	var globals = &taskfile.Vars{}
-
+func ToQuotedString(args []string) (string, error) {
+	var quotedCliArgs []string
 	for _, arg := range args {
-		if !strings.Contains(arg, "=") {
-			calls = append(calls, taskfile.Call{Task: arg})
-			continue
+		quotedCliArg, err := syntax.Quote(arg, syntax.LangBash)
+		if err != nil {
+			return "", err
 		}
-
-		if len(calls) < 1 {
-			name, value := splitVar(arg)
-			globals.Set(name, taskfile.Var{Static: value})
-		} else {
-			if calls[len(calls)-1].Vars == nil {
-				calls[len(calls)-1].Vars = &taskfile.Vars{}
-			}
-			name, value := splitVar(arg)
-			calls[len(calls)-1].Vars.Set(name, taskfile.Var{Static: value})
-		}
+		quotedCliArgs = append(quotedCliArgs, quotedCliArg)
 	}
-
-	if len(calls) == 0 {
-		calls = append(calls, taskfile.Call{Task: "default"})
-	}
-
-	return calls, globals
+	return strings.Join(quotedCliArgs, " "), nil
 }
 
 func splitVar(s string) (string, string) {

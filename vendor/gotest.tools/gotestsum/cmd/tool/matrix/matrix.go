@@ -205,13 +205,13 @@ func bucketPackages(timing map[string]time.Duration, packages []string, n uint) 
 
 func minBucket(buckets []bucket) int {
 	var n int
-	var min time.Duration = -1
+	var minDuration time.Duration = -1
 	for i, b := range buckets {
 		switch {
-		case min < 0 || b.Total < min:
-			min = b.Total
+		case minDuration < 0 || b.Total < minDuration:
+			minDuration = b.Total
 			n = i
-		case b.Total == min && len(buckets[i].Packages) < len(buckets[n].Packages):
+		case b.Total == minDuration && len(buckets[i].Packages) < len(buckets[n].Packages):
 			n = i
 		}
 	}
@@ -247,7 +247,7 @@ func writeMatrix(out io.Writer, buckets []bucket) error {
 			if len(bucket.Packages) > 1 {
 				extra = fmt.Sprintf(" and %d others", len(bucket.Packages)-1)
 			}
-			p.Description = fmt.Sprintf("partition %d - package %v%v",
+			p.Description = fmt.Sprintf("%d - %v%v",
 				p.ID, testjson.RelativePackagePath(bucket.Packages[0]), extra)
 		}
 

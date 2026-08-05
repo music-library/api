@@ -6,7 +6,7 @@ package websocket
 import (
 	"time"
 
-	"github.com/gofiber/websocket/v2"
+	"github.com/gofiber/contrib/v3/websocket"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -2,11 +2,13 @@
 
 `gotestsum` runs tests using `go test -json`, prints formatted test output, and a summary of the test run.
 It is designed to work well for both local development, and for automation like CI.
+`gotestsum` is [used by](#who-uses-gotestsum) some of the most popular Go projects.
 
 ## Install
 
 Download a binary from [releases](https://github.com/gotestyourself/gotestsum/releases), or build from
-source with `go install gotest.tools/gotestsum@latest`. With `go` version before 1.17, use `go get gotest.tools/gotestsum`.
+source with `go install gotest.tools/gotestsum@latest`. To run without installing use
+`go run gotest.tools/gotestsum@latest`.
 
 ## Documentation
 
@@ -38,14 +40,16 @@ The `--format` flag or `GOTESTSUM_FORMAT` environment variable set the format th
 is used to print the test names, and possibly test output, as the tests run. Most
 outputs use color to highlight pass, fail, or skip.
 
-The `--format-hivis` flag changes the icons used by `pkgname` formats to higher
-visiblity unicode characters.
+The `--format-icons` flag changes the icons used by `pkgname` and `testdox` formats.
+You can set the `GOTESTSUM_FORMAT_ICONS` environment variable, instead of the flag.
+The nerdfonts icons requires a font from [Nerd Fonts](https://www.nerdfonts.com/).
 
 Commonly used formats (see `--help` for a full list):
 
  * `dots` - print a character for each test.
  * `pkgname` (default) - print a line for each package.
  * `testname` - print a line for each test and package.
+ * `testdox` - print a sentence for each test using [gotestdox](https://github.com/bitfield/gotestdox).
  * `standard-quiet` - the standard `go test` format.
  * `standard-verbose` - the standard `go test -v` format.
 
@@ -137,7 +141,8 @@ test run has completed. The binary will be run with the following environment
 variables set:
 
 ```
-GOTESTSUM_FORMAT        # gotestsum format (ex: short)
+GOTESTSUM_ELAPSED       # test run time in seconds (ex: 2.45s)
+GOTESTSUM_FORMAT        # gotestsum format (ex: pkgname)
 GOTESTSUM_JSONFILE      # path to the jsonfile, empty if no file path was given
 GOTESTSUM_JUNITFILE     # path to the junit.xml file, empty if no file path was given
 TESTS_ERRORS            # number of errors
@@ -156,8 +161,14 @@ package may be used to parse the JSON file output.
 
 First install the example notification command with `go get gotest.tools/gotestsum/contrib/notify`.
 The command will be downloaded to `$GOPATH/bin` as `notify`. Note that this
-example `notify` command only works on macOS with
+example `notify` command only works on Linux with `notify-send` and on macOS with
 [terminal-notifer](https://github.com/julienXX/terminal-notifier) installed.
+
+On Linux, you need to have some "test-pass" and "test-fail" icons installed in your icon theme.
+Some sample icons can be found in `contrib/notify`, and can be installed with `make install`.
+
+On Windows, you can install [notify-send.exe](https://github.com/vaskovsky/notify-send)
+but it does not support custom icons so will have to use the basic "info" and "error".
 
 ```
 gotestsum --post-run-command notify
@@ -165,11 +176,25 @@ gotestsum --post-run-command notify
 
 **Example: command with flags**
 
-Possitional arguments or command line flags can be passed to the `--post-run-command` by
+Positional arguments or command line flags can be passed to the `--post-run-command` by
 quoting the whole command.
 
 ```
 gotestsum --post-run-command "notify me --date"
+```
+
+**Example: printing slowest tests**
+
+The post-run command can be combined with other `gotestsum` commands and tools to provide
+a more detailed summary. This example uses `gotestsum tool slowest` to print the
+slowest 10 tests after the summary.
+
+```
+gotestsum \
+  --jsonfile tmp.json.log \
+  --post-run-command "bash -c '
+    echo; echo Slowest tests;
+    gotestsum tool slowest --num 10 --jsonfile tmp.json.log'"
 ```
 
 ### Re-running failed tests
@@ -182,6 +207,9 @@ with `--rerun-fails=n`.
 To avoid re-running tests when there are real failures, the re-run will be
 skipped when there are too many test failures. By default this value is 10, and
 can be changed with `--rerun-fails-max-failures=n`.
+
+You may use the `--rerun-fails-abort-on-data-race` flag to abort the re-run if
+a data race is detected.
 
 Note that using `--rerun-fails` may require the use of other flags, depending on
 how you specify args to `go test`:
@@ -248,11 +276,11 @@ stdout and stderr output:
   non-JSON output, you can use `--ignore-non-json-output-lines` (added in version 1.7.0)
   to ignore non-JSON lines and write them to `gotestsum`'s stderr instead.
 * Any stderr produced by the script will be considered an error (this behaviour
-  is necessary because package build errors are only reported by writting to
+  is necessary because package build errors are only reported by writing to
   stderr, not the `test2json` stdout). Any stderr produced by tests is not
   considered an error (it will be in the `test2json` stdout).
 
-**Example: accept intput from stdin**
+**Example: accept input from stdin**
 ```
 cat out.json | gotestsum --raw-command -- cat
 ```
@@ -397,6 +425,35 @@ Note that [delve] must be installed in order to use debug (`d`).
 ```
 gotestsum --watch --format testname
 ```
+
+## Who uses gotestsum?
+
+The projects below use (or have used) gotestsum.
+
+* [kubernetes](https://github.com/kubernetes/kubernetes/blob/master/hack/tools/tools.go)
+* [moby](https://github.com/moby/moby/blob/master/hack/test/unit) (aka Docker)
+* [etcd](https://github.com/etcd-io/etcd/blob/main/tools/mod/tools.go)
+* [hashicorp/vault](https://github.com/hashicorp/vault/blob/main/tools/tools.go)
+* [hashicorp/consul](https://github.com/hashicorp/consul/blob/main/.github/workflows/reusable-unit.yml)
+* [prometheus](https://github.com/prometheus/prometheus/blob/main/Makefile.common)
+* [minikube](https://github.com/kubernetes/minikube/blob/master/hack/jenkins/common.ps1)
+* [influxdb](https://github.com/influxdata/influxdb/blob/master/scripts/ci/build-tests.sh)
+* [pulumi](https://github.com/pulumi/pulumi/blob/master/.github/workflows/ci.yml)
+* [grafana/k6](https://github.com/grafana/k6/issues/1986#issuecomment-996625874)
+* [grafana/loki](https://github.com/grafana/loki/blob/main/loki-build-image/Dockerfile)
+* [telegraf](https://github.com/influxdata/telegraf/blob/master/.circleci/config.yml)
+* [containerd](https://github.com/containerd/containerd/blob/main/.cirrus.yml)
+* [linkerd2](https://github.com/linkerd/linkerd2/blob/main/justfile)
+* [elastic/go-elasticsearch](https://github.com/elastic/go-elasticsearch/blob/main/Makefile)
+* [microsoft/hcsshim](https://github.com/microsoft/hcsshim/blob/main/.github/workflows/ci.yml)
+* [pingcap/tidb](https://github.com/pingcap/tidb/blob/master/Makefile)
+* [dex](https://github.com/dexidp/dex/blob/master/Makefile)
+* [coder](https://github.com/coder/coder/blob/main/Makefile)
+* [docker/cli](https://github.com/docker/cli/blob/master/Makefile)
+* [mattermost](https://github.com/mattermost/mattermost/blob/master/server/Makefile)
+* [gofiber/fiber](https://github.com/gofiber/fiber/blob/main/.github/workflows/test.yml)
+
+Please open a GitHub issue or pull request to add or remove projects from this list.
 
 ## Development
 

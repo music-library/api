@@ -3,7 +3,11 @@
 
 package syntax
 
-import "strconv"
+import (
+	"slices"
+	"strconv"
+	"strings"
+)
 
 var (
 	litLeftBrace  = &Lit{Value: "{"}
@@ -12,10 +16,10 @@ var (
 	litRightBrace = &Lit{Value: "}"}
 )
 
-// SplitBraces parses brace expansions within a word's literal parts. If any
-// valid brace expansions are found, they are replaced with BraceExp nodes, and
-// the function returns true. Otherwise, the word is left untouched and the
-// function returns false.
+// SplitBraces parses brace expansions within a word's literal parts.
+// If any valid brace expansions are found, they are replaced with BraceExp nodes,
+// and the function returns true.
+// Otherwise, the word is left untouched and the function returns false.
 //
 // For example, a literal word "foo{bar,baz}" will result in a word containing
 // the literal "foo", and a brace expansion with the elements "bar" and "baz".
@@ -23,7 +27,13 @@ var (
 // It does not return an error; malformed brace expansions are simply skipped.
 // For example, the literal word "a{b" is left unchanged.
 func SplitBraces(word *Word) bool {
-	any := false
+	if !slices.ContainsFunc(word.Parts, func(part WordPart) bool {
+		lit, ok := part.(*Lit)
+		return ok && strings.Contains(lit.Value, "{")
+	}) {
+		// In the common case where a word has no braces, skip any allocs.
+		return false
+	}
 	top := &Word{}
 	acc := top
 	var cur *BraceExp
@@ -62,6 +72,9 @@ func SplitBraces(word *Word) bool {
 				addLit(&l2)
 			}
 			switch lit.Value[j] {
+			case '\\':
+				j++
+				continue
 			case '{':
 				addlitidx()
 				acc = &Word{}
@@ -90,7 +103,6 @@ func SplitBraces(word *Word) bool {
 				if cur == nil {
 					continue
 				}
-				any = true
 				addlitidx()
 				br := pop()
 				if len(br.Elems) == 1 {
@@ -108,9 +120,9 @@ func SplitBraces(word *Word) bool {
 				broken := false
 				for i, elem := range br.Elems[:2] {
 					val := elem.Lit()
-					if _, err := strconv.Atoi(val); err == nil {
-					} else if len(val) == 1 &&
-						'a' <= val[0] && val[0] <= 'z' {
+					// ParseInt with bit size 64 to ensure consistent behavior on 32-bit platforms.
+					if _, err := strconv.ParseInt(val, 10, 64); err == nil {
+					} else if len(val) == 1 && asciiLetter(val[0]) {
 						chars[i] = true
 					} else {
 						broken = true
@@ -119,7 +131,8 @@ func SplitBraces(word *Word) bool {
 				if len(br.Elems) == 3 {
 					// increment must be a number
 					val := br.Elems[2].Lit()
-					if _, err := strconv.Atoi(val); err != nil {
+					// ParseInt with bit size 64 to ensure consistent behavior on 32-bit platforms.
+					if _, err := strconv.ParseInt(val, 10, 64); err != nil {
 						broken = true
 					}
 				}
@@ -153,9 +166,6 @@ func SplitBraces(word *Word) bool {
 			left.Value = left.Value[last:]
 			addLit(&left)
 		}
-	}
-	if !any {
-		return false
 	}
 	// open braces that were never closed fall back to non-braces
 	for acc != top {

@@ -3,11 +3,11 @@ package api
 import (
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
-func HealthHandler(c *fiber.Ctx) error {
+func HealthHandler(c fiber.Ctx) error {
 	message := "ok"
 	status := 200
 	ok := true

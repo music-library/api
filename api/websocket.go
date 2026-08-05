@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v2"
-	fiberWs "github.com/gofiber/websocket/v2"
+	fiberWs "github.com/gofiber/contrib/v3/websocket"
+	"github.com/gofiber/fiber/v3"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/api/websocket"
 	"gitlab.com/music-library/music-api/indexer"
@@ -10,7 +10,7 @@ import (
 
 var WsHub = websocket.NewHub()
 
-func WebsocketUpgradeMiddleware(c *fiber.Ctx) error {
+func WebsocketUpgradeMiddleware(c fiber.Ctx) error {
 	// IsWebSocketUpgrade returns true if the client
 	// requested upgrade to the WebSocket protocol.
 	if fiberWs.IsWebSocketUpgrade(c) {

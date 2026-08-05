@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/music-library/music-api/indexer"
 )
@@ -78,10 +78,8 @@ func TestHealthHandler(t *testing.T) {
 		// Create a new http request with the route from the test case
 		req := httptest.NewRequest(test.method, test.route, nil)
 
-		// Perform the request plain with the app,
-		// the second argument is a request latency
-		// (set to -1 for no latency)
-		resp, _ := app.Test(req, -1)
+		// Perform the request with test timeouts disabled.
+		resp, _ := app.Test(req, fiber.TestConfig{Timeout: 0})
 
 		res, _ := json.Marshal(test.res)
 		body, _ := io.ReadAll(resp.Body)

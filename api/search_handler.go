@@ -3,12 +3,12 @@ package api
 import (
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 
 	"gitlab.com/music-library/music-api/indexer"
 )
 
-func SearchHandler(c *fiber.Ctx) error {
+func SearchHandler(c fiber.Ctx) error {
 	indexValues := indexer.IndexNgram.Search(strings.ToLower(c.Params("query")))
 	tracksArr := make([]string, 0, len(indexValues))
 

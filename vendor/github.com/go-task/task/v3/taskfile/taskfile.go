@@ -1,84 +1,94 @@
 package taskfile
 
 import (
+	"context"
 	"fmt"
-	"time"
+	"net/http"
+	"net/url"
+	"slices"
+	"strings"
 
-	"github.com/Masterminds/semver/v3"
-	"gopkg.in/yaml.v3"
+	"github.com/go-task/task/v3/errors"
 )
 
 var (
-	V3 = semver.MustParse("3")
-	V2 = semver.MustParse("2")
+	// DefaultTaskfiles is the list of Taskfile file names supported by default.
+	DefaultTaskfiles = []string{
+		"Taskfile.yml",
+		"taskfile.yml",
+		"Taskfile.yaml",
+		"taskfile.yaml",
+		"Taskfile.dist.yml",
+		"taskfile.dist.yml",
+		"Taskfile.dist.yaml",
+		"taskfile.dist.yaml",
+	}
+	allowedContentTypes = []string{
+		"text/plain",
+		"text/yaml",
+		"text/x-yaml",
+		"application/yaml",
+		"application/x-yaml",
+		"application/octet-stream",
+	}
 )
 
-// Taskfile represents a Taskfile.yml
-type Taskfile struct {
-	Version    *semver.Version
-	Expansions int
-	Output     Output
-	Method     string
-	Includes   *IncludedTaskfiles
-	Set        []string
-	Shopt      []string
-	Vars       *Vars
-	Env        *Vars
-	Tasks      Tasks
-	Silent     bool
-	Dotenv     []string
-	Run        string
-	Interval   time.Duration
-}
-
-func (tf *Taskfile) UnmarshalYAML(node *yaml.Node) error {
-	switch node.Kind {
-
-	case yaml.MappingNode:
-		var taskfile struct {
-			Version    *semver.Version
-			Expansions int
-			Output     Output
-			Method     string
-			Includes   *IncludedTaskfiles
-			Set        []string
-			Shopt      []string
-			Vars       *Vars
-			Env        *Vars
-			Tasks      Tasks
-			Silent     bool
-			Dotenv     []string
-			Run        string
-			Interval   time.Duration
-		}
-		if err := node.Decode(&taskfile); err != nil {
-			return err
-		}
-		tf.Version = taskfile.Version
-		tf.Expansions = taskfile.Expansions
-		tf.Output = taskfile.Output
-		tf.Method = taskfile.Method
-		tf.Includes = taskfile.Includes
-		tf.Set = taskfile.Set
-		tf.Shopt = taskfile.Shopt
-		tf.Vars = taskfile.Vars
-		tf.Env = taskfile.Env
-		tf.Tasks = taskfile.Tasks
-		tf.Silent = taskfile.Silent
-		tf.Dotenv = taskfile.Dotenv
-		tf.Run = taskfile.Run
-		tf.Interval = taskfile.Interval
-		if tf.Expansions <= 0 {
-			tf.Expansions = 2
-		}
-		if tf.Vars == nil {
-			tf.Vars = &Vars{}
-		}
-		if tf.Env == nil {
-			tf.Env = &Vars{}
-		}
-		return nil
+// RemoteExists will check if a file at the given URL Exists. If it does, it
+// will return its URL. If it does not, it will search the search for any files
+// at the given URL with any of the default Taskfile files names. If any of
+// these match a file, the first matching path will be returned. If no files are
+// found, an error will be returned.
+func RemoteExists(ctx context.Context, u url.URL, client *http.Client) (*url.URL, error) {
+	// Create a new HEAD request for the given URL to check if the resource exists
+	req, err := http.NewRequestWithContext(ctx, "HEAD", u.String(), nil)
+	if err != nil {
+		return nil, errors.TaskfileFetchFailedError{URI: u.Redacted()}
 	}
 
-	return fmt.Errorf("yaml: line %d: cannot unmarshal %s into taskfile", node.Line, node.ShortTag())
+	// Request the given URL
+	resp, err := client.Do(req)
+	if err != nil {
+		if ctx.Err() != nil {
+			return nil, fmt.Errorf("checking remote file: %w", ctx.Err())
+		}
+		return nil, errors.TaskfileFetchFailedError{URI: u.Redacted()}
+	}
+	defer resp.Body.Close()
+
+	// If the request was successful and the content type is allowed, return the
+	// URL The content type check is to avoid downloading files that are not
+	// Taskfiles It means we can try other files instead of downloading
+	// something that is definitely not a Taskfile
+	contentType := resp.Header.Get("Content-Type")
+	if resp.StatusCode == http.StatusOK && slices.ContainsFunc(allowedContentTypes, func(s string) bool {
+		return strings.Contains(contentType, s)
+	}) {
+		return &u, nil
+	}
+
+	// If the request was not successful, append the default Taskfile names to
+	// the URL and return the URL of the first successful request
+	for _, taskfile := range DefaultTaskfiles {
+		// Fixes a bug with JoinPath where a leading slash is not added to the
+		// path if it is empty
+		if u.Path == "" {
+			u.Path = "/"
+		}
+		alt := u.JoinPath(taskfile)
+		req.URL = alt
+
+		// Try the alternative URL
+		resp, err = client.Do(req)
+		if err != nil {
+			return nil, errors.TaskfileFetchFailedError{URI: u.Redacted()}
+		}
+		defer resp.Body.Close()
+
+		// If the request was successful, return the URL
+		if resp.StatusCode == http.StatusOK {
+			return alt, nil
+		}
+	}
+
+	return nil, errors.TaskfileNotFoundError{URI: u.Redacted(), Walk: false}
 }

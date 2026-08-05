@@ -3,12 +3,12 @@ package api
 import (
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/music-library/music-api/indexer"
 )
 
-func TrackHandler(c *fiber.Ctx) error {
+func TrackHandler(c fiber.Ctx) error {
 	libId := c.Locals("libId").(string)
 	trackId := strings.ToLower(c.Params("id"))
 	track, ok := indexer.MusicLibIndex.Indexes[libId].Get(trackId)

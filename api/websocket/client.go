@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gofiber/websocket/v2"
+	"github.com/gofiber/contrib/v3/websocket"
 	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 )

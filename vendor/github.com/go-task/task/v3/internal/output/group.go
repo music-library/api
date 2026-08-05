@@ -3,6 +3,8 @@ package output
 import (
 	"bytes"
 	"io"
+
+	"github.com/go-task/task/v3/internal/templater"
 )
 
 type Group struct {
@@ -10,19 +12,18 @@ type Group struct {
 	ErrorOnly  bool
 }
 
-func (g Group) WrapWriter(stdOut, _ io.Writer, _ string, tmpl Templater) (io.Writer, io.Writer, CloseFunc) {
+func (g Group) WrapWriter(stdOut, _ io.Writer, _ string, cache *templater.Cache) (io.Writer, io.Writer, CloseFunc) {
 	gw := &groupWriter{writer: stdOut}
 	if g.Begin != "" {
-		gw.begin = tmpl.Replace(g.Begin) + "\n"
+		gw.begin = templater.Replace(g.Begin, cache) + "\n"
 	}
 	if g.End != "" {
-		gw.end = tmpl.Replace(g.End) + "\n"
+		gw.end = templater.Replace(g.End, cache) + "\n"
 	}
 	return gw, gw, func(err error) error {
 		if g.ErrorOnly && err == nil {
 			return nil
 		}
-
 		return gw.close()
 	}
 }
@@ -38,14 +39,22 @@ func (gw *groupWriter) Write(p []byte) (int, error) {
 }
 
 func (gw *groupWriter) close() error {
-	if gw.buff.Len() == 0 {
-		// don't print begin/end messages if there's no buffered entries
+	switch {
+	case gw.buff.Len() == 0:
 		return nil
-	}
-	if _, err := io.WriteString(gw.writer, gw.begin); err != nil {
+	case gw.begin == "" && gw.end == "":
+		_, err := io.Copy(gw.writer, &gw.buff)
+		return err
+	default:
+		_, err := io.Copy(gw.writer, gw.combinedBuff())
 		return err
 	}
-	gw.buff.WriteString(gw.end)
-	_, err := io.Copy(gw.writer, &gw.buff)
-	return err
+}
+
+func (gw *groupWriter) combinedBuff() io.Reader {
+	var b bytes.Buffer
+	_, _ = b.WriteString(gw.begin)
+	_, _ = io.Copy(&b, &gw.buff)
+	_, _ = b.WriteString(gw.end)
+	return &b
 }

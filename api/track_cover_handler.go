@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	log "github.com/sirupsen/logrus"
 	useCache "gitlab.com/music-library/music-api/cache"
 	"gitlab.com/music-library/music-api/indexer"
 	"gitlab.com/music-library/music-api/static"
 )
 
-func TrackCoverHandler(c *fiber.Ctx) error {
+func TrackCoverHandler(c fiber.Ctx) error {
 	c.Response().Header.Add("Content-Type", "image/jpg")
 
 	libId := c.Locals("libId").(string)

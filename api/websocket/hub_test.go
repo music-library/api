@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -12,7 +13,7 @@ import (
 	"time"
 
 	fastWebsocket "github.com/fasthttp/websocket"
-	fiberWebsocket "github.com/gofiber/websocket/v2"
+	fiberWebsocket "github.com/gofiber/contrib/v3/websocket"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,11 +85,14 @@ func newClosedWebSocketConn(t *testing.T) *fiberWebsocket.Conn {
 
 	clientConn, serverConn := net.Pipe()
 	handshakeDone := make(chan error, 1)
+	serverDone := make(chan struct{})
 
 	go func() {
+		defer close(serverDone)
+		defer serverConn.Close()
+
 		request, err := http.ReadRequest(bufio.NewReader(serverConn))
 		if err != nil {
-			serverConn.Close()
 			handshakeDone <- err
 			return
 		}
@@ -100,8 +104,10 @@ func newClosedWebSocketConn(t *testing.T) *fiberWebsocket.Conn {
 			"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: %s\r\n\r\n",
 			accept,
 		)
-		serverConn.Close()
 		handshakeDone <- err
+		if err == nil {
+			_, _ = io.Copy(io.Discard, serverConn)
+		}
 	}()
 
 	webSocketURL := &url.URL{Scheme: "ws", Host: "example.test", Path: "/"}
@@ -112,9 +118,10 @@ func newClosedWebSocketConn(t *testing.T) *fiberWebsocket.Conn {
 	if err := <-handshakeDone; err != nil {
 		t.Fatalf("complete websocket handshake: %v", err)
 	}
-	if err := conn.Close(); err != nil {
+	if err := conn.UnderlyingConn().Close(); err != nil {
 		t.Fatalf("close websocket connection: %v", err)
 	}
+	<-serverDone
 
 	return &fiberWebsocket.Conn{Conn: conn}
 }

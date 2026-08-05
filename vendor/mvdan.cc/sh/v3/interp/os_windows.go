@@ -1,18 +1,15 @@
-// Copyright (c) 2017, Andrey Nering <andrey.nering@gmail.com>
-// See LICENSE for licensing information
-
 package interp
 
 import (
-	"fmt"
-	"os"
+	"io/fs"
+	"syscall"
+	"time"
 )
 
-func mkfifo(path string, mode uint32) error {
-	return fmt.Errorf("unsupported")
-}
-
-// hasPermissionToDir is a no-op on Windows.
-func hasPermissionToDir(info os.FileInfo) bool {
-	return true
+func getAtime(info fs.FileInfo) time.Time {
+	stat, ok := info.Sys().(*syscall.Win32FileAttributeData)
+	if !ok {
+		return info.ModTime()
+	}
+	return time.Unix(0, stat.LastAccessTime.Nanoseconds())
 }

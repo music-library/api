@@ -3,7 +3,7 @@ package api
 import (
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gitlab.com/music-library/music-api/config"
 	"gitlab.com/music-library/music-api/version"
 )
@@ -15,7 +15,7 @@ type BaseRes struct {
 	Routes  []string `json:"routes"`
 }
 
-func BaseHandler(c *fiber.Ctx) error {
+func BaseHandler(c fiber.Ctx) error {
 	return c.JSON(BaseRes{
 		Message: "Hello, World 👋!",
 		Version: version.Version,
